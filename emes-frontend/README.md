@@ -1,72 +1,53 @@
-# EMES Frontend
+# EMES Platform Frontend
 
-Enterprise MES Solution - Frontend Application
+Enterprise MES Solution Dashboard built with Next.js 15 and shadcn/ui.
 
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: Zustand
+- **UI Library**: shadcn/ui (Tailwind CSS)
 - **HTTP Client**: Axios
-- **Form Handling**: React Hook Form + Zod
+- **Form**: React Hook Form + Zod
 
 ## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Installation
-
-```bash
-npm install
-```
 
 ### Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
+# Open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-### Build
+### Production Build
 
 ```bash
+# Build for production
 npm run build
-npm run start
+
+# Start production server
+npm start
 ```
 
-## Project Structure
+## Features
 
-```
-emes-frontend/
-├── app/                   # App Router
-│   ├── (auth)/           # Authentication pages
-│   ├── (admin)/          # Admin pages
-│   └── layout.tsx        # Root layout
-├── components/           # Reusable components
-├── lib/                  # Utilities and helpers
-│   ├── api/             # API client
-│   ├── hooks/           # Custom hooks
-│   └── utils/           # Utility functions
-├── store/               # Zustand stores
-├── types/               # TypeScript types
-└── public/              # Static assets
-```
+✅ Dashboard Layout (Sidebar + Header)
+✅ User Management (CRUD + Pagination)
+✅ API Integration with Axios
+✅ Enterprise-grade UI Design
+🚧 JWT Authentication (pending)
+🚧 Remaining Admin Pages (pending)
 
 ## Environment Variables
 
-Create a `.env.local` file:
-
-```
-NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
-NEXT_PUBLIC_APP_NAME=EMES Platform
-NEXT_PUBLIC_APP_VERSION=1.0.0
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
-## License
+---
 
-Proprietary
+**Version**: 1.0.0
