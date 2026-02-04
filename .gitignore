@@ -1,0 +1,129 @@
+# ===================================================================
+# EMES Platform - .gitignore
+# ===================================================================
+
+# ===================================================================
+# Backend (Java/Maven)
+# ===================================================================
+
+# Maven
+emes-platform/target/
+emes-platform/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# VS Code
+.vscode/
+
+# Logs
+emes-platform/logs/
+emes-platform/**/logs/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ===================================================================
+# Frontend (Next.js)
+# ===================================================================
+
+# Dependencies
+emes-frontend/node_modules/
+emes-frontend/.pnp
+emes-frontend/.pnp.js
+
+# Testing
+emes-frontend/coverage/
+
+# Next.js
+emes-frontend/.next/
+emes-frontend/out/
+
+# Production
+emes-frontend/build/
+
+# Misc
+emes-frontend/.DS_Store
+emes-frontend/*.pem
+
+# Debug
+emes-frontend/npm-debug.log*
+emes-frontend/yarn-debug.log*
+emes-frontend/yarn-error.log*
+
+# Local env files
+emes-frontend/.env*.local
+
+# Vercel
+emes-frontend/.vercel
+
+# TypeScript
+emes-frontend/*.tsbuildinfo
+emes-frontend/next-env.d.ts
+
+# ===================================================================
+# Environment Variables
+# ===================================================================
+
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===================================================================
+# Database
+# ===================================================================
+
+# Database backups
+*.sql.bak
+*.sql.backup
+
+# ===================================================================
+# Documentation
+# ===================================================================
+
+# Ignore generated documentation (keep source docs)
+docs/build/
+docs/_build/
+
+# ===================================================================
+# Claude Code Memory (keep this)
+# ===================================================================
+
+# Keep Claude Code memory for context
+!.claude/
+
+# ===================================================================
+# Plans (keep plans)
+# ===================================================================
+
+# Keep plans for reference
+!.claude/plans/

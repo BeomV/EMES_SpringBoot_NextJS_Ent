@@ -1,0 +1,46 @@
+# application-dev.yml (개발 환경)
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # DataSource 설정
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=EMES_DEV;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: ${DB_PASSWORD:YourPassword123!}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA 설정 (개발 환경)
+  jpa:
+    hibernate:
+      ddl-auto: update  # 개발 환경에서는 자동 스키마 업데이트
+    show-sql: true
+
+  # Elasticsearch 설정
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic
+    password: ${ES_PASSWORD:}
+
+# CORS 설정 (개발 환경)
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:3001
+  allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+  max-age: 3600
+
+# Logging (개발 환경)
+logging:
+  level:
+    root: INFO
+    com.emes: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
