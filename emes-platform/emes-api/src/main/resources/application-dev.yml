@@ -6,9 +6,9 @@ spring:
 
   # DataSource 설정
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=EMES_DEV;encrypt=true;trustServerCertificate=true
+    url: jdbc:sqlserver://localhost:11433;databaseName=EMES_DEV;encrypt=true;trustServerCertificate=true
     username: sa
-    password: ${DB_PASSWORD:YourPassword123!}
+    password: ${DB_PASSWORD:Admin@12345}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     hikari:
       maximum-pool-size: 10

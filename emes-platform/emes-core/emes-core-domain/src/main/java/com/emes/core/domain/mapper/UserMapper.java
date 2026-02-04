@@ -104,4 +104,9 @@ public interface UserMapper {
     int updatePassword(@Param("userId") Long userId,
                        @Param("password") String password,
                        @Param("passwordChangedAt") java.time.LocalDateTime passwordChangedAt);
+
+    /**
+     * 사용자 권한 코드 목록 조회 (역할 → 권한)
+     */
+    List<String> selectPermissionsByUserId(@Param("userId") Long userId);
 }

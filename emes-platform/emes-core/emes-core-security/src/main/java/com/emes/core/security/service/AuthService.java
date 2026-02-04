@@ -66,12 +66,12 @@ public class AuthService {
                             .userId(user.getUserId())
                             .username(user.getUsername())
                             .email(user.getEmail())
-                            .displayName(user.getDisplayName())
+                            .displayName(user.getFullName())
                             .build())
                     .build();
 
         } catch (AuthenticationException e) {
-            log.error("Login failed for user: {}", request.getUsername());
+            log.error("Login failed for user: {} - {}", request.getUsername(), e.getMessage(), e);
             throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
     }
@@ -115,7 +115,7 @@ public class AuthService {
                         .userId(user.getUserId())
                         .username(user.getUsername())
                         .email(user.getEmail())
-                        .displayName(user.getDisplayName())
+                        .displayName(user.getFullName())
                         .build())
                 .build();
     }

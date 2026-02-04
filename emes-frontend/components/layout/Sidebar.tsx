@@ -1,58 +1,68 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { LucideIcon } from 'lucide-react';
 import {
   Users,
   ShieldCheck,
   Key,
-  FolderTree,
-  Menu as MenuIcon,
-  Code,
   FileText,
-  Globe,
-  Database,
   LayoutDashboard,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const menuItems = [
+interface SubMenuItem {
+  title: string;
+  href: string;
+}
+
+interface MenuItem {
+  title: string;
+  icon: LucideIcon;
+  href?: string;
+  children?: SubMenuItem[];
+}
+
+const menuItems: MenuItem[] = [
   {
-    title: 'Dashboard',
+    title: '대시보드',
     href: '/',
     icon: LayoutDashboard,
   },
   {
-    title: 'User Management',
+    title: '사용자 관리',
     icon: Users,
     children: [
-      { title: 'Users', href: '/users' },
-      { title: 'User Groups', href: '/user-groups' },
+      { title: '사용자 목록', href: '/users' },
+      { title: '사용자 그룹', href: '/user-groups' },
     ],
   },
   {
-    title: 'Access Control',
+    title: '접근 권한',
     icon: ShieldCheck,
     children: [
-      { title: 'Roles', href: '/roles' },
-      { title: 'Permissions', href: '/permissions' },
+      { title: '역할 관리', href: '/roles' },
+      { title: '권한 관리', href: '/permissions' },
     ],
   },
   {
-    title: 'System',
+    title: '시스템 관리',
     icon: Key,
     children: [
-      { title: 'Codes', href: '/codes' },
-      { title: 'Menus', href: '/menus' },
-      { title: 'I18n', href: '/i18n' },
+      { title: '기초코드', href: '/codes' },
+      { title: '메뉴 관리', href: '/menus' },
+      { title: '다국어 관리', href: '/i18n' },
     ],
   },
   {
-    title: 'Monitoring',
+    title: '모니터링',
     icon: FileText,
     children: [
-      { title: 'Audit Logs', href: '/audit-logs' },
-      { title: 'Metadata', href: '/metadata' },
+      { title: '감사 로그', href: '/audit-logs' },
+      { title: '메타데이터', href: '/metadata' },
     ],
   },
 ];
@@ -60,10 +70,56 @@ const menuItems = [
 export function Sidebar() {
   const pathname = usePathname();
 
+  const getInitialOpenMenus = (): Record<string, boolean> => {
+    const openMenus: Record<string, boolean> = {};
+    menuItems.forEach((item) => {
+      if (item.children) {
+        const isChildActive = item.children.some(
+          (child) => pathname === child.href || pathname.startsWith(child.href + '/')
+        );
+        if (isChildActive) {
+          openMenus[item.title] = true;
+        }
+      }
+    });
+    return openMenus;
+  };
+
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(getInitialOpenMenus);
+
+  useEffect(() => {
+    menuItems.forEach((item) => {
+      if (item.children) {
+        const isChildActive = item.children.some(
+          (child) => pathname === child.href || pathname.startsWith(child.href + '/')
+        );
+        if (isChildActive) {
+          setOpenMenus((prev) => ({ ...prev, [item.title]: true }));
+        }
+      }
+    });
+  }, [pathname]);
+
+  const handleToggle = (title: string) => {
+    setOpenMenus((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(href + '/');
+  };
+
+  const hasActiveChild = (children: SubMenuItem[]) => {
+    return children.some((child) => isActive(child.href));
+  };
+
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-card">
       <div className="flex h-full flex-col">
-        {/* Logo */}
+        {/* 로고 */}
         <div className="flex h-14 items-center border-b px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -73,19 +129,19 @@ export function Sidebar() {
           </Link>
         </div>
 
-        {/* Navigation */}
+        {/* 네비게이션 */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="space-y-1">
-            {menuItems.map((item, index) => (
-              <div key={index}>
+          <div className="space-y-0.5">
+            {menuItems.map((item) => (
+              <div key={item.title}>
                 {item.href ? (
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent',
-                      pathname === item.href
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground'
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+                      isActive(item.href)
+                        ? 'bg-primary text-primary-foreground font-medium'
+                        : 'font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -93,25 +149,52 @@ export function Sidebar() {
                   </Link>
                 ) : (
                   <>
-                    <div className="mb-1 mt-4 flex items-center gap-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      <item.icon className="h-4 w-4" />
-                      {item.title}
-                    </div>
-                    <div className="ml-7 space-y-1">
-                      {item.children?.map((child, childIndex) => (
-                        <Link
-                          key={childIndex}
-                          href={child.href}
-                          className={cn(
-                            'block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent',
-                            pathname === child.href
-                              ? 'bg-accent text-accent-foreground'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          {child.title}
-                        </Link>
-                      ))}
+                    <button
+                      type="button"
+                      onClick={() => handleToggle(item.title)}
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent',
+                        item.children && hasActiveChild(item.children)
+                          ? 'bg-primary/10 font-semibold text-primary'
+                          : 'font-medium text-muted-foreground'
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <item.icon className="h-4 w-4" />
+                        {item.title}
+                      </div>
+                      <ChevronDown
+                        className={cn(
+                          'h-4 w-4 transition-transform duration-200',
+                          openMenus[item.title] && 'rotate-180'
+                        )}
+                      />
+                    </button>
+
+                    <div
+                      className={cn(
+                        'overflow-hidden transition-all duration-200 ease-in-out',
+                        openMenus[item.title]
+                          ? 'max-h-96 opacity-100'
+                          : 'max-h-0 opacity-0'
+                      )}
+                    >
+                      <div className="mt-0.5 space-y-0.5 pl-10">
+                        {item.children?.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className={cn(
+                              'block rounded-md px-3 py-1.5 text-sm transition-colors',
+                              isActive(child.href)
+                                ? 'font-medium text-primary'
+                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                            )}
+                          >
+                            {child.title}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </>
                 )}
@@ -120,7 +203,7 @@ export function Sidebar() {
           </div>
         </nav>
 
-        {/* Footer */}
+        {/* 하단 정보 */}
         <div className="border-t p-4">
           <div className="text-xs text-muted-foreground">
             <div className="font-semibold">EMES Platform</div>

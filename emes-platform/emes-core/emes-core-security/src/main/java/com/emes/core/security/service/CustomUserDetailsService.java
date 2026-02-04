@@ -13,8 +13,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Custom UserDetailsService
@@ -38,12 +38,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // 계정 상태 확인
-        if (user.getAccountLocked()) {
+        if (user.getIsLocked()) {
             log.error("계정이 잠금 상태입니다: {}", username);
             throw new BusinessException(ErrorCode.ACCOUNT_LOCKED);
         }
 
-        if (!user.getEnabled()) {
+        if (!user.getIsActive()) {
             log.error("계정이 비활성화 상태입니다: {}", username);
             throw new BusinessException(ErrorCode.ACCOUNT_DISABLED);
         }
@@ -55,18 +55,22 @@ public class CustomUserDetailsService implements UserDetailsService {
      * User 객체를 Spring Security UserDetails로 변환
      */
     private UserDetails createUserDetails(User user) {
-        // TODO: 실제로는 사용자의 역할/권한을 DB에서 조회해야 함
-        Collection<? extends GrantedAuthority> authorities =
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+        List<String> permissions = userMapper.selectPermissionsByUserId(user.getUserId());
+
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        for (String perm : permissions) {
+            authorities.add(new SimpleGrantedAuthority(perm));
+        }
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
                 .authorities(authorities)
                 .accountExpired(false)
-                .accountLocked(user.getAccountLocked())
+                .accountLocked(user.getIsLocked())
                 .credentialsExpired(false)
-                .disabled(!user.getEnabled())
+                .disabled(!user.getIsActive())
                 .build();
     }
 }

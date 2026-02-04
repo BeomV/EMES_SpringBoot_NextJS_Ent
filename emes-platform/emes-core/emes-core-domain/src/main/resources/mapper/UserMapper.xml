@@ -11,12 +11,12 @@
         <result property="username" column="username"/>
         <result property="password" column="password"/>
         <result property="email" column="email"/>
-        <result property="displayName" column="display_name"/>
-        <result property="phoneNumber" column="phone_number"/>
+        <result property="fullName" column="full_name"/>
+        <result property="phone" column="phone"/>
         <result property="department" column="department"/>
         <result property="position" column="position"/>
-        <result property="enabled" column="enabled"/>
-        <result property="accountLocked" column="account_locked"/>
+        <result property="isActive" column="is_active"/>
+        <result property="isLocked" column="is_locked"/>
         <result property="failedLoginAttempts" column="failed_login_attempts"/>
         <result property="lastLoginAt" column="last_login_at"/>
         <result property="passwordChangedAt" column="password_changed_at"/>
@@ -30,8 +30,8 @@
 
     <!-- Base Column -->
     <sql id="BaseColumns">
-        user_id, username, password, email, display_name, phone_number, department, position,
-        enabled, account_locked, failed_login_attempts, last_login_at, password_changed_at,
+        user_id, username, password, email, full_name, phone, department, position,
+        is_active, is_locked, failed_login_attempts, last_login_at, password_changed_at,
         created_by, created_at, updated_by, updated_at, deleted_at, version
     </sql>
 
@@ -79,7 +79,7 @@
             AND email LIKE '%' + #{email} + '%'
         </if>
         <if test="displayName != null and displayName != ''">
-            AND display_name LIKE '%' + #{displayName} + '%'
+            AND full_name LIKE '%' + #{displayName} + '%'
         </if>
         <if test="department != null and department != ''">
             AND department LIKE '%' + #{department} + '%'
@@ -88,10 +88,10 @@
             AND position LIKE '%' + #{position} + '%'
         </if>
         <if test="enabled != null">
-            AND enabled = #{enabled}
+            AND is_active = #{enabled}
         </if>
         <if test="accountLocked != null">
-            AND account_locked = #{accountLocked}
+            AND is_locked = #{accountLocked}
         </if>
         <choose>
             <when test="sortBy == 'username'">
@@ -101,7 +101,7 @@
                 ORDER BY email ${sortDirection}
             </when>
             <when test="sortBy == 'displayName'">
-                ORDER BY display_name ${sortDirection}
+                ORDER BY full_name ${sortDirection}
             </when>
             <when test="sortBy == 'department'">
                 ORDER BY department ${sortDirection}
@@ -126,7 +126,7 @@
             AND email LIKE '%' + #{email} + '%'
         </if>
         <if test="displayName != null and displayName != ''">
-            AND display_name LIKE '%' + #{displayName} + '%'
+            AND full_name LIKE '%' + #{displayName} + '%'
         </if>
         <if test="department != null and department != ''">
             AND department LIKE '%' + #{department} + '%'
@@ -135,22 +135,22 @@
             AND position LIKE '%' + #{position} + '%'
         </if>
         <if test="enabled != null">
-            AND enabled = #{enabled}
+            AND is_active = #{enabled}
         </if>
         <if test="accountLocked != null">
-            AND account_locked = #{accountLocked}
+            AND is_locked = #{accountLocked}
         </if>
     </select>
 
     <!-- Insert -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO TB_CORE_USER (
-            username, password, email, display_name, phone_number, department, position,
-            enabled, account_locked, failed_login_attempts, password_changed_at,
+            username, password, email, full_name, phone, department, position,
+            is_active, is_locked, failed_login_attempts, password_changed_at,
             created_by, created_at, version
         ) VALUES (
-            #{username}, #{password}, #{email}, #{displayName}, #{phoneNumber}, #{department}, #{position},
-            #{enabled}, #{accountLocked}, 0, #{passwordChangedAt},
+            #{username}, #{password}, #{email}, #{fullName}, #{phone}, #{department}, #{position},
+            #{isActive}, #{isLocked}, 0, #{passwordChangedAt},
             #{createdBy}, #{createdAt}, 0
         )
     </insert>
@@ -160,12 +160,12 @@
         UPDATE TB_CORE_USER
         <set>
             <if test="email != null">email = #{email},</if>
-            <if test="displayName != null">display_name = #{displayName},</if>
-            <if test="phoneNumber != null">phone_number = #{phoneNumber},</if>
+            <if test="fullName != null">full_name = #{fullName},</if>
+            <if test="phone != null">phone = #{phone},</if>
             <if test="department != null">department = #{department},</if>
             <if test="position != null">position = #{position},</if>
-            <if test="enabled != null">enabled = #{enabled},</if>
-            <if test="accountLocked != null">account_locked = #{accountLocked},</if>
+            <if test="isActive != null">is_active = #{isActive},</if>
+            <if test="isLocked != null">is_locked = #{isLocked},</if>
             <if test="updatedBy != null">updated_by = #{updatedBy},</if>
             <if test="updatedAt != null">updated_at = #{updatedAt},</if>
             version = version + 1
@@ -205,14 +205,14 @@
     <!-- Lock Account -->
     <update id="lockAccount">
         UPDATE TB_CORE_USER
-        SET account_locked = 1
+        SET is_locked = 1
         WHERE user_id = #{userId}
     </update>
 
     <!-- Unlock Account -->
     <update id="unlockAccount">
         UPDATE TB_CORE_USER
-        SET account_locked = 0,
+        SET is_locked = 0,
             failed_login_attempts = 0
         WHERE user_id = #{userId}
     </update>
@@ -224,5 +224,15 @@
             password_changed_at = #{passwordChangedAt}
         WHERE user_id = #{userId}
     </update>
+
+    <!-- Select Permissions by User ID (via user_role + role_permission + permission) -->
+    <select id="selectPermissionsByUserId" resultType="string">
+        SELECT DISTINCT p.permission_code
+        FROM TB_CORE_USER_ROLE ur
+        INNER JOIN TB_CORE_ROLE_PERMISSION rp ON ur.role_id = rp.role_id
+        INNER JOIN TB_CORE_PERMISSION p ON rp.permission_id = p.permission_id
+        WHERE ur.user_id = #{userId}
+          AND p.is_active = 1
+    </select>
 
 </mapper>

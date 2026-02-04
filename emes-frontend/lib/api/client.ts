@@ -9,29 +9,6 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor for adding auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    // TODO: Add JWT token when authentication is implemented
-    // const token = localStorage.getItem('accessToken');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for handling errors
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    // TODO: Handle token refresh when authentication is implemented
-    if (error.response?.status === 401) {
-      // Redirect to login or refresh token
-    }
-    return Promise.reject(error);
-  }
-);
+// TODO: 운영 시 JWT 인증 인터셉터 복원
+// apiClient.interceptors.request.use(...)
+// apiClient.interceptors.response.use(...)

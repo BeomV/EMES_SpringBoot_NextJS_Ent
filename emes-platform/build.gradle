@@ -77,9 +77,10 @@ subprojects {
         useJUnitPlatform()
     }
 
-    // UTF-8 인코딩 설정
+    // UTF-8 인코딩 설정 + Spring @RequestParam 파라미터명 리플렉션
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
+        options.compilerArgs << '-parameters'
     }
 }
 

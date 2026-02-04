@@ -25,6 +25,25 @@ export interface ErrorResponse {
   path: string;
 }
 
+// Auth Types
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+  user: {
+    userId: number;
+    username: string;
+    email: string;
+    displayName: string;
+  };
+}
+
 // User Types
 export interface User {
   userId: number;

@@ -47,11 +47,11 @@ public class JwtTokenProvider {
         Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
 
         return Jwts.builder()
-                .setSubject(username)
+                .subject(username)
                 .claim("auth", authorities)
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .issuedAt(now)
+                .expiration(validity)
+                .signWith(secretKey)
                 .compact();
     }
 
@@ -63,10 +63,10 @@ public class JwtTokenProvider {
         Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
 
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .subject(username)
+                .issuedAt(now)
+                .expiration(validity)
+                .signWith(secretKey)
                 .compact();
     }
 
@@ -93,10 +93,10 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
+            Jwts.parser()
+                    .verifyWith(secretKey)
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token);
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.error("Invalid JWT signature: {}", e.getMessage());
@@ -115,11 +115,11 @@ public class JwtTokenProvider {
      */
     private Claims parseClaims(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
+            return Jwts.parser()
+                    .verifyWith(secretKey)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }

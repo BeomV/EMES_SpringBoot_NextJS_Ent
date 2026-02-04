@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, LogOut, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export function Header() {
+
   return (
     <header className="fixed right-0 top-0 z-30 h-14 w-[calc(100%-16rem)] border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center justify-between px-6">
@@ -45,7 +46,7 @@ export function Header() {
                   <AvatarFallback>AD</AvatarFallback>
                 </Avatar>
                 <div className="hidden text-left md:block">
-                  <div className="text-sm font-medium">Admin User</div>
+                  <div className="text-sm font-medium">Admin</div>
                   <div className="text-xs text-muted-foreground">
                     admin@emes.com
                   </div>
@@ -53,16 +54,16 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>내 계정</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
-                Profile
+                프로필
               </DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive">
-                Logout
+                <LogOut className="mr-2 h-4 w-4" />
+                로그아웃
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

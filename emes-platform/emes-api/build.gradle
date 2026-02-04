@@ -13,6 +13,12 @@ dependencies {
     // Spring Boot Starter Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    // MyBatis
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter'
+
+    // MS SQL Server
+    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
+
     // Spring Boot Starter Actuator (Monitoring)
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 

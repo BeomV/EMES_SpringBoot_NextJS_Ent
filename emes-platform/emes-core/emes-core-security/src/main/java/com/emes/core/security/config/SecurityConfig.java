@@ -1,13 +1,9 @@
 package com.emes.core.security.config;
 
-import com.emes.core.security.filter.JwtAuthenticationFilter;
-import com.emes.core.security.jwt.JwtTokenProvider;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -15,18 +11,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Spring Security Configuration
+ * TODO: 운영 시 @EnableMethodSecurity, JWT 필터, 인증 규칙 복원
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
-@RequiredArgsConstructor
+// @EnableMethodSecurity  // 개발 중 비활성화
 public class SecurityConfig {
-
-    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * Password Encoder Bean
@@ -59,25 +52,9 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 요청 권한 설정
+                // 요청 권한 설정 — 개발 중 인증 비활성화 (TODO: 운영 시 복원)
                 .authorizeHttpRequests(auth -> auth
-                        // 인증 없이 접근 가능한 경로
-                        .requestMatchers(
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/refresh",
-                                "/api/v1/health",
-                                "/actuator/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**"
-                        ).permitAll()
-                        // 그 외 모든 요청은 인증 필요
-                        .anyRequest().authenticated()
-                )
-
-                // JWT 인증 필터 추가
-                .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtTokenProvider),
-                        UsernamePasswordAuthenticationFilter.class
+                        .anyRequest().permitAll()
                 );
 
         return http.build();

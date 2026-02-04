@@ -48,15 +48,14 @@ public class UserService {
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .email(request.getEmail())
-                .displayName(request.getDisplayName())
-                .phoneNumber(request.getPhoneNumber())
+                .fullName(request.getDisplayName())
+                .phone(request.getPhoneNumber())
                 .department(request.getDepartment())
                 .position(request.getPosition())
-                .enabled(request.getEnabled() != null ? request.getEnabled() : true)
-                .accountLocked(false)
+                .isActive(request.getEnabled() != null ? request.getEnabled() : true)
+                .isLocked(false)
                 .passwordChangedAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
-                .createdBy("SYSTEM")  // TODO: 현재 로그인 사용자로 변경
                 .build();
 
         // 3. DB 저장
@@ -151,14 +150,13 @@ public class UserService {
         User updatedUser = User.builder()
                 .userId(userId)
                 .email(request.getEmail() != null ? request.getEmail() : user.getEmail())
-                .displayName(request.getDisplayName() != null ? request.getDisplayName() : user.getDisplayName())
-                .phoneNumber(request.getPhoneNumber() != null ? request.getPhoneNumber() : user.getPhoneNumber())
+                .fullName(request.getDisplayName() != null ? request.getDisplayName() : user.getFullName())
+                .phone(request.getPhoneNumber() != null ? request.getPhoneNumber() : user.getPhone())
                 .department(request.getDepartment() != null ? request.getDepartment() : user.getDepartment())
                 .position(request.getPosition() != null ? request.getPosition() : user.getPosition())
-                .enabled(request.getEnabled() != null ? request.getEnabled() : user.getEnabled())
-                .accountLocked(request.getAccountLocked() != null ? request.getAccountLocked() : user.getAccountLocked())
+                .isActive(request.getEnabled() != null ? request.getEnabled() : user.getIsActive())
+                .isLocked(request.getAccountLocked() != null ? request.getAccountLocked() : user.getIsLocked())
                 .updatedAt(LocalDateTime.now())
-                .updatedBy("SYSTEM")  // TODO: 현재 로그인 사용자로 변경
                 .build();
 
         // 4. DB 업데이트
@@ -227,9 +225,8 @@ public class UserService {
 
         User updatedUser = User.builder()
                 .userId(userId)
-                .accountLocked(locked)
+                .isLocked(locked)
                 .updatedAt(LocalDateTime.now())
-                .updatedBy("SYSTEM")
                 .build();
 
         int updated = userMapper.update(updatedUser);
@@ -248,18 +245,18 @@ public class UserService {
                 .userId(user.getUserId())
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .displayName(user.getDisplayName())
-                .phoneNumber(user.getPhoneNumber())
+                .displayName(user.getFullName())
+                .phoneNumber(user.getPhone())
                 .department(user.getDepartment())
                 .position(user.getPosition())
-                .enabled(user.getEnabled())
-                .accountLocked(user.getAccountLocked())
+                .enabled(user.getIsActive())
+                .accountLocked(user.getIsLocked())
                 .lastLoginAt(user.getLastLoginAt())
                 .passwordChangedAt(user.getPasswordChangedAt())
                 .createdAt(user.getCreatedAt())
-                .createdBy(user.getCreatedBy())
+                .createdBy(user.getCreatedBy() != null ? String.valueOf(user.getCreatedBy()) : null)
                 .updatedAt(user.getUpdatedAt())
-                .updatedBy(user.getUpdatedBy())
+                .updatedBy(user.getUpdatedBy() != null ? String.valueOf(user.getUpdatedBy()) : null)
                 .build();
     }
 }
