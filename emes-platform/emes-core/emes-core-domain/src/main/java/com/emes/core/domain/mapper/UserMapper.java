@@ -37,18 +37,26 @@ public interface UserMapper {
      */
     List<User> selectByCondition(@Param("username") String username,
                                   @Param("email") String email,
+                                  @Param("displayName") String displayName,
                                   @Param("department") String department,
-                                  @Param("isActive") Boolean isActive,
-                                  @Param("offset") Integer offset,
-                                  @Param("limit") Integer limit);
+                                  @Param("position") String position,
+                                  @Param("enabled") Boolean enabled,
+                                  @Param("accountLocked") Boolean accountLocked,
+                                  @Param("sortBy") String sortBy,
+                                  @Param("sortDirection") String sortDirection,
+                                  @Param("limit") Integer limit,
+                                  @Param("offset") Integer offset);
 
     /**
      * 사용자 검색 결과 카운트
      */
-    int countByCondition(@Param("username") String username,
-                         @Param("email") String email,
-                         @Param("department") String department,
-                         @Param("isActive") Boolean isActive);
+    long countByCondition(@Param("username") String username,
+                          @Param("email") String email,
+                          @Param("displayName") String displayName,
+                          @Param("department") String department,
+                          @Param("position") String position,
+                          @Param("enabled") Boolean enabled,
+                          @Param("accountLocked") Boolean accountLocked);
 
     /**
      * 사용자 생성
@@ -89,4 +97,11 @@ public interface UserMapper {
      * 계정 잠금 해제
      */
     int unlockAccount(@Param("userId") Long userId);
+
+    /**
+     * 비밀번호 변경
+     */
+    int updatePassword(@Param("userId") Long userId,
+                       @Param("password") String password,
+                       @Param("passwordChangedAt") java.time.LocalDateTime passwordChangedAt);
 }
