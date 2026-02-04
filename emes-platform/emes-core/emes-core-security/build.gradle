@@ -1,0 +1,19 @@
+dependencies {
+    // Core Modules
+    implementation project(':emes-core:emes-core-common')
+    implementation project(':emes-core:emes-core-domain')
+
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Spring Boot Starter Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson'
+
+    // Test
+    testImplementation 'org.springframework.security:spring-security-test'
+}

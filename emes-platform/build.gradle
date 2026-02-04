@@ -1,0 +1,89 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.2' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+}
+
+group = 'com.emes'
+version = '1.0.0-SNAPSHOT'
+
+// 모든 서브프로젝트에 공통 설정 적용
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    group = 'com.emes'
+    version = '1.0.0-SNAPSHOT'
+
+    java {
+        sourceCompatibility = '21'
+        targetCompatibility = '21'
+    }
+
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:3.4.2"
+        }
+
+        dependencies {
+            // Internal Modules
+            dependency "com.emes:emes-core-common:${project.version}"
+            dependency "com.emes:emes-core-domain:${project.version}"
+            dependency "com.emes:emes-core-security:${project.version}"
+            dependency "com.emes:emes-core-admin:${project.version}"
+            dependency "com.emes:emes-core-search:${project.version}"
+
+            // MyBatis
+            dependency 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+
+            // JWT
+            dependency 'io.jsonwebtoken:jjwt-api:0.12.5'
+            dependency 'io.jsonwebtoken:jjwt-impl:0.12.5'
+            dependency 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+            // MS SQL Server
+            dependency 'com.microsoft.sqlserver:mssql-jdbc:12.6.1.jre11'
+
+            // SpringDoc OpenAPI
+            dependency 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+            // MapStruct
+            dependency 'org.mapstruct:mapstruct:1.5.5.Final'
+            dependency 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+        }
+    }
+
+    dependencies {
+        // Lombok (모든 모듈에 공통)
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+
+        // Test (모든 모듈에 공통)
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
+    // UTF-8 인코딩 설정
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+}
+
+// 루트 프로젝트는 빌드하지 않음
+tasks.withType(JavaCompile) {
+    enabled = false
+}

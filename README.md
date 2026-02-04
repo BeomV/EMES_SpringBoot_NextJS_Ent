@@ -35,7 +35,8 @@ EMES Platform은 **하루 수백만 건의 데이터를 처리**할 수 있는 �
 - **Search Engine**: Elasticsearch 8.x
 - **Security**: Spring Security + JWT
 - **API**: RESTful API
-- **Build Tool**: Maven
+- **ORM**: MyBatis 3.0.3
+- **Build Tool**: Gradle 8.11
 
 #### Frontend
 - **Framework**: Next.js 15 (App Router)
@@ -56,7 +57,7 @@ EMES Platform은 **하루 수백만 건의 데이터를 처리**할 수 있는 �
 emes-platform/
 ├── emes-core/              # Core 모듈 (필수)
 │   ├── emes-core-common/   # 공통 유틸리티
-│   ├── emes-core-domain/   # JPA 엔티티
+│   ├── emes-core-domain/   # MyBatis Mapper
 │   ├── emes-core-security/ # JWT 인증/인가
 │   ├── emes-core-admin/    # 관리자 기능
 │   └── emes-core-search/   # Elasticsearch
@@ -76,7 +77,7 @@ emes-platform/
 - **JDK 21** 이상
 - **Node.js 18** 이상
 - **MS SQL Server** 2019 이상
-- **Maven 3.8** 이상
+- **Gradle 8.11** (Wrapper 포함)
 - **Elasticsearch 8.x** (선택적)
 
 ### 1. 데이터베이스 설정

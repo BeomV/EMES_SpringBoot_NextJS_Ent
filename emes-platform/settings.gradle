@@ -1,0 +1,16 @@
+rootProject.name = 'emes-platform'
+
+// Core Modules
+include 'emes-core:emes-core-common'
+include 'emes-core:emes-core-domain'
+include 'emes-core:emes-core-security'
+include 'emes-core:emes-core-admin'
+include 'emes-core:emes-core-search'
+
+// API Module
+include 'emes-api'
+
+// Sub Modules (향후 추가)
+// include 'emes-modules:emes-module-mes'
+// include 'emes-modules:emes-module-groupware'
+// include 'emes-modules:emes-module-qms'

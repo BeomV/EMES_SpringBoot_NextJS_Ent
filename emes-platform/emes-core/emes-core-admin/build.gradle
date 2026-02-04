@@ -1,0 +1,19 @@
+dependencies {
+    // Core Modules
+    implementation project(':emes-core:emes-core-common')
+    implementation project(':emes-core:emes-core-domain')
+    implementation project(':emes-core:emes-core-security')
+
+    // Core Search (optional)
+    compileOnly project(':emes-core:emes-core-search')
+
+    // Spring Boot Starter Web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Spring Boot Starter Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct'
+    annotationProcessor 'org.mapstruct:mapstruct-processor'
+}

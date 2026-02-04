@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.emes.core.domain.mapper.UserMapper">
+
+    <!-- Result Map -->
+    <resultMap id="UserResultMap" type="com.emes.core.domain.model.User">
+        <id property="userId" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="fullName" column="full_name"/>
+        <result property="phone" column="phone"/>
+        <result property="department" column="department"/>
+        <result property="position" column="position"/>
+        <result property="isActive" column="is_active"/>
+        <result property="isLocked" column="is_locked"/>
+        <result property="failedLoginAttempts" column="failed_login_attempts"/>
+        <result property="lastLoginAt" column="last_login_at"/>
+        <result property="passwordChangedAt" column="password_changed_at"/>
+        <result property="createdBy" column="created_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="deletedAt" column="deleted_at"/>
+        <result property="version" column="version"/>
+    </resultMap>
+
+    <!-- Base Column -->
+    <sql id="BaseColumns">
+        user_id, username, password, email, full_name, phone, department, position,
+        is_active, is_locked, failed_login_attempts, last_login_at, password_changed_at,
+        created_by, created_at, updated_by, updated_at, deleted_at, version
+    </sql>
+
+    <!-- Select by ID -->
+    <select id="selectById" resultMap="UserResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM TB_CORE_USER
+        WHERE user_id = #{userId}
+          AND deleted_at IS NULL
+    </select>
+
+    <!-- Select by Username -->
+    <select id="selectByUsername" resultMap="UserResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM TB_CORE_USER
+        WHERE username = #{username}
+          AND deleted_at IS NULL
+    </select>
+
+    <!-- Select by Email -->
+    <select id="selectByEmail" resultMap="UserResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM TB_CORE_USER
+        WHERE email = #{email}
+          AND deleted_at IS NULL
+    </select>
+
+    <!-- Select All -->
+    <select id="selectAll" resultMap="UserResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM TB_CORE_USER
+        WHERE deleted_at IS NULL
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Select by Condition (페이징) -->
+    <select id="selectByCondition" resultMap="UserResultMap">
+        SELECT <include refid="BaseColumns"/>
+        FROM TB_CORE_USER
+        WHERE deleted_at IS NULL
+        <if test="username != null and username != ''">
+            AND username LIKE '%' + #{username} + '%'
+        </if>
+        <if test="email != null and email != ''">
+            AND email LIKE '%' + #{email} + '%'
+        </if>
+        <if test="department != null and department != ''">
+            AND department LIKE '%' + #{department} + '%'
+        </if>
+        <if test="isActive != null">
+            AND is_active = #{isActive}
+        </if>
+        ORDER BY created_at DESC
+        OFFSET #{offset} ROWS
+        FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- Count by Condition -->
+    <select id="countByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM TB_CORE_USER
+        WHERE deleted_at IS NULL
+        <if test="username != null and username != ''">
+            AND username LIKE '%' + #{username} + '%'
+        </if>
+        <if test="email != null and email != ''">
+            AND email LIKE '%' + #{email} + '%'
+        </if>
+        <if test="department != null and department != ''">
+            AND department LIKE '%' + #{department} + '%'
+        </if>
+        <if test="isActive != null">
+            AND is_active = #{isActive}
+        </if>
+    </select>
+
+    <!-- Insert -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO TB_CORE_USER (
+            username, password, email, full_name, phone, department, position,
+            is_active, is_locked, failed_login_attempts, password_changed_at,
+            created_by, created_at, version
+        ) VALUES (
+            #{username}, #{password}, #{email}, #{fullName}, #{phone}, #{department}, #{position},
+            #{isActive}, #{isLocked}, 0, #{passwordChangedAt},
+            #{createdBy}, GETDATE(), 0
+        )
+    </insert>
+
+    <!-- Update -->
+    <update id="update">
+        UPDATE TB_CORE_USER
+        SET email = #{email},
+            full_name = #{fullName},
+            phone = #{phone},
+            department = #{department},
+            position = #{position},
+            is_active = #{isActive},
+            updated_by = #{updatedBy},
+            updated_at = GETDATE(),
+            version = version + 1
+        WHERE user_id = #{userId}
+          AND deleted_at IS NULL
+    </update>
+
+    <!-- Soft Delete -->
+    <update id="softDelete">
+        UPDATE TB_CORE_USER
+        SET deleted_at = #{deletedAt}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- Hard Delete -->
+    <delete id="delete">
+        DELETE FROM TB_CORE_USER
+        WHERE user_id = #{userId}
+    </delete>
+
+    <!-- Increment Failed Login Attempts -->
+    <update id="incrementFailedLoginAttempts">
+        UPDATE TB_CORE_USER
+        SET failed_login_attempts = failed_login_attempts + 1
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- Reset Failed Login Attempts -->
+    <update id="resetFailedLoginAttempts">
+        UPDATE TB_CORE_USER
+        SET failed_login_attempts = 0,
+            last_login_at = GETDATE()
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- Lock Account -->
+    <update id="lockAccount">
+        UPDATE TB_CORE_USER
+        SET is_locked = 1
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- Unlock Account -->
+    <update id="unlockAccount">
+        UPDATE TB_CORE_USER
+        SET is_locked = 0,
+            failed_login_attempts = 0
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>

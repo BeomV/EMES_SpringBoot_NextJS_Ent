@@ -1,0 +1,16 @@
+dependencies {
+    // Core Common
+    implementation project(':emes-core:emes-core-common')
+
+    // MyBatis Spring Boot Starter
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter'
+
+    // MS SQL Server Driver
+    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
+
+    // Spring Boot Starter Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Test - H2 Database for testing
+    testRuntimeOnly 'com.h2database:h2'
+}

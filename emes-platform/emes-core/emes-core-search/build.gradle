@@ -1,0 +1,8 @@
+dependencies {
+    // Core Modules
+    implementation project(':emes-core:emes-core-common')
+    implementation project(':emes-core:emes-core-domain')
+
+    // Spring Boot Starter Data Elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+}
