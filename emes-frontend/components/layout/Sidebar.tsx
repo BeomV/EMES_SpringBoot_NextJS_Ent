@@ -117,15 +117,15 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-card">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-slate-900 text-white">
       <div className="flex h-full flex-col">
         {/* 로고 */}
-        <div className="flex h-14 items-center border-b px-6">
+        <div className="flex h-14 items-center border-b border-slate-800 px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-blue-900">
               <span className="text-sm font-bold">E</span>
             </div>
-            <span className="text-lg">EMES Platform</span>
+            <span className="text-lg text-white">EMES Platform</span>
           </Link>
         </div>
 
@@ -138,10 +138,10 @@ export function Sidebar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all',
                       isActive(item.href)
-                        ? 'bg-primary text-primary-foreground font-medium'
-                        : 'font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        ? 'bg-blue-600/90 text-white font-medium shadow-md'
+                        : 'font-medium text-blue-100 hover:bg-blue-700/70 hover:text-white'
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -153,10 +153,10 @@ export function Sidebar() {
                       type="button"
                       onClick={() => handleToggle(item.title)}
                       className={cn(
-                        'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent',
+                        'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-all',
                         item.children && hasActiveChild(item.children)
-                          ? 'bg-primary/10 font-semibold text-primary'
-                          : 'font-medium text-muted-foreground'
+                          ? 'bg-blue-600/90 font-semibold text-white shadow-md'
+                          : 'font-medium text-blue-100 hover:bg-blue-700/70'
                       )}
                     >
                       <div className="flex items-center gap-3">
@@ -179,16 +179,16 @@ export function Sidebar() {
                           : 'max-h-0 opacity-0'
                       )}
                     >
-                      <div className="mt-0.5 space-y-0.5 pl-10">
+                      <div className="mt-1.5 space-y-1 pl-6 py-1">
                         {item.children?.map((child) => (
                           <Link
                             key={child.href}
                             href={child.href}
                             className={cn(
-                              'block rounded-md px-3 py-1.5 text-sm transition-colors',
+                              'block rounded-md px-3 py-1.5 text-sm transition-all',
                               isActive(child.href)
-                                ? 'font-medium text-primary'
-                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                ? 'font-medium text-yellow-300 bg-blue-700/50'
+                                : 'text-blue-100 hover:bg-blue-700/50 hover:text-white'
                             )}
                           >
                             {child.title}
@@ -204,8 +204,8 @@ export function Sidebar() {
         </nav>
 
         {/* 하단 정보 */}
-        <div className="border-t p-4">
-          <div className="text-xs text-muted-foreground">
+        <div className="border-t border-slate-800 p-4">
+          <div className="text-xs text-blue-100">
             <div className="font-semibold">EMES Platform</div>
             <div>Version 1.0.0</div>
           </div>

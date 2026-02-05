@@ -1,95 +1,43 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Plus,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Lock,
-  Unlock,
-  Key,
-} from 'lucide-react';
-import { usersApi } from '@/lib/api/users';
+import { ActionMenu } from '@/components/common/ActionMenu';
+import { Plus, Edit, Trash2, Lock, Unlock, Key } from 'lucide-react';
+import { useListPage } from '@/hooks/list/useListPage';
+import { usersApi, createUserFilterMapper } from '@/lib/api/users';
+import { formatDate } from '@/lib/utils/format';
 import type { User, UserSearchParams } from '@/types/api';
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchParams, setSearchParams] = useState<UserSearchParams>({
-    size: 9999,
-    sortBy: 'createdAt',
-    sortDirection: 'desc',
+  // 모든 상태와 로직이 통합된 hook 하나로!
+  const {
+    data: users,
+    loading,
+    handleFilter,
+    handleDelete,
+    handleCustomAction,
+  } = useListPage<User, UserSearchParams>({
+    api: {
+      list: usersApi.getUsers,
+      delete: usersApi.deleteUser,
+      customActions: {
+        lock: usersApi.lockAccount,
+        unlock: usersApi.unlockAccount,
+      },
+    },
+    filterMapper: createUserFilterMapper(),
+    getEntityId: (user) => user.userId,
+    entityName: '사용자',
   });
 
-  const loadUsers = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await usersApi.getUsers(searchParams);
-      setUsers(response.data.content);
-    } catch (error) {
-      console.error('Failed to load users:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
-
-  const handleFilter = (filters: Record<string, string>) => {
-    setSearchParams((prev) => ({
-      ...prev,
-      username: filters.username || undefined,
-      displayName: filters.displayName || undefined,
-      department: filters.department || undefined,
-      enabled: filters.enabled ? filters.enabled === 'true' : undefined,
-      accountLocked: filters.accountLocked ? filters.accountLocked === 'true' : undefined,
-    }));
-  };
-
-  const handleDelete = async (userId: number) => {
-    if (!confirm('이 사용자를 삭제하시겠습니까?')) return;
-    try {
-      await usersApi.deleteUser(userId);
-      loadUsers();
-    } catch (error) {
-      console.error('Failed to delete user:', error);
-    }
-  };
-
-  const handleLockToggle = async (user: User) => {
-    try {
-      if (user.accountLocked) {
-        await usersApi.unlockAccount(user.userId);
-      } else {
-        await usersApi.lockAccount(user.userId);
-      }
-      loadUsers();
-    } catch (error) {
-      console.error('Failed to toggle account lock:', error);
-    }
-  };
-
-  const formatDate = (date: string | undefined) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
+  // 잠금/해제 토글 (간결해짐)
+  const handleLockToggle = (user: User) => {
+    const action = user.accountLocked ? 'unlock' : 'lock';
+    handleCustomAction(action, user.userId);
   };
 
   const columns: DataTableColumn<User>[] = [
@@ -148,43 +96,24 @@ export default function UsersPage() {
       align: 'center',
       resizable: false,
       render: (_, row) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7">
-              <MoreVertical className="h-3.5 w-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Edit className="mr-2 h-3.5 w-3.5" />
-              수정
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Key className="mr-2 h-3.5 w-3.5" />
-              비밀번호 변경
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleLockToggle(row)}>
-              {row.accountLocked ? (
-                <>
-                  <Unlock className="mr-2 h-3.5 w-3.5" />
-                  잠금 해제
-                </>
-              ) : (
-                <>
-                  <Lock className="mr-2 h-3.5 w-3.5" />
-                  계정 잠금
-                </>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={() => handleDelete(row.userId)}
-            >
-              <Trash2 className="mr-2 h-3.5 w-3.5" />
-              삭제
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ActionMenu
+          size="sm"
+          items={[
+            { label: '수정', icon: Edit },
+            { label: '비밀번호 변경', icon: Key },
+            {
+              label: row.accountLocked ? '잠금 해제' : '계정 잠금',
+              icon: row.accountLocked ? Unlock : Lock,
+              onClick: () => handleLockToggle(row),
+            },
+            {
+              label: '삭제',
+              icon: Trash2,
+              variant: 'destructive',
+              onClick: () => handleDelete(row.userId),
+            },
+          ]}
+        />
       ),
     },
   ];

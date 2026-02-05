@@ -14,8 +14,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar />
       <div className="ml-64">
         <Header />
-        <main className="min-h-[calc(100vh-3.5rem)] bg-background p-6 pt-20">
-          {children}
+        <main className="min-h-[calc(100vh-3.5rem)] bg-slate-50 p-6 pt-20">
+          <div className="rounded-lg bg-white p-6 shadow-sm">
+            {children}
+          </div>
         </main>
       </div>
     </div>

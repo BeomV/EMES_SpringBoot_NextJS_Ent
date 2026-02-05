@@ -84,17 +84,14 @@ function useColumnResize(
     columns.map((col) => parseWidth(col.width))
   )
 
-  const widthsRef = React.useRef<number[]>(columnWidths)
-  const dragState = React.useRef<{
+  // useRef로 dragState 관리 (리렌더링 방지)
+  const dragStateRef = React.useRef<{
     colIndex: number
     startX: number
-    startWidth: number
+    startWidths: number[]
   } | null>(null)
-  const tableRef = React.useRef<HTMLTableElement>(null)
 
-  React.useEffect(() => {
-    widthsRef.current = columnWidths
-  }, [columnWidths])
+  const tableRef = React.useRef<HTMLTableElement>(null)
 
   React.useEffect(() => {
     const newWidths = columns.map((col) => parseWidth(col.width))
@@ -106,51 +103,55 @@ function useColumnResize(
     (colIndex: number, e: React.MouseEvent) => {
       if (!enabled) return
       e.preventDefault()
-      dragState.current = {
+
+      dragStateRef.current = {
         colIndex,
         startX: e.clientX,
-        startWidth: widthsRef.current[colIndex],
+        startWidths: [...columnWidths],
       }
+
       document.body.style.cursor = 'col-resize'
       document.body.style.userSelect = 'none'
     },
-    [enabled]
+    [enabled, columnWidths]
   )
 
   React.useEffect(() => {
     if (!enabled) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      const ds = dragState.current
+      const ds = dragStateRef.current
       if (!ds) return
+
       const delta = e.clientX - ds.startX
       const col = columns[ds.colIndex]
       const minW = col.minWidth ?? 50
-      const newWidth = Math.max(minW, ds.startWidth + delta)
 
-      widthsRef.current = widthsRef.current.map((w, i) =>
-        i === ds.colIndex ? newWidth : w
-      )
+      // 현재 칼럼 너비만 마우스 거리만큼 변경
+      const startWidth = ds.startWidths[ds.colIndex]
+      const newWidth = Math.max(minW, startWidth + delta)
 
-      if (tableRef.current) {
-        const cols = tableRef.current.querySelectorAll('colgroup col')
-        if (cols[ds.colIndex]) {
-          ;(cols[ds.colIndex] as HTMLElement).style.width = `${newWidth}px`
+      // 새로운 너비 배열 생성 (현재 칼럼만 변경)
+      const newWidths = ds.startWidths.map((w, i) => {
+        if (i === ds.colIndex) {
+          return newWidth
         }
-      }
+        return w
+      })
+
+      // 상태 업데이트
+      setColumnWidths(newWidths)
     }
 
     const handleMouseUp = () => {
-      if (dragState.current) {
-        setColumnWidths([...widthsRef.current])
-        dragState.current = null
-        document.body.style.cursor = ''
-        document.body.style.userSelect = ''
-      }
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      dragStateRef.current = null
     }
 
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
+
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
@@ -203,12 +204,12 @@ export function DataTable<T extends object>({
       {hasFilters && (
         <div className="flex items-end gap-3 flex-wrap">
           {filters.map((filter) => (
-            <div key={filter.key} className="flex flex-col gap-1">
+            <div key={filter.key} className="flex flex-col gap-1 w-40">
               <Label className="text-xs">{filter.label}</Label>
               {filter.type === 'text' ? (
                 <Input
                   placeholder={filter.placeholder ?? ''}
-                  className="h-7 text-xs w-40"
+                  className="h-7 text-xs"
                   value={filterValues[filter.key] ?? ''}
                   onChange={(e) =>
                     setFilterValues((prev) => ({
@@ -230,7 +231,7 @@ export function DataTable<T extends object>({
                     }))
                   }
                 >
-                  <SelectTrigger className="h-7 text-xs w-32">
+                  <SelectTrigger className="h-7 text-xs">
                     <SelectValue placeholder={filter.placeholder ?? '전체'} />
                   </SelectTrigger>
                   <SelectContent>

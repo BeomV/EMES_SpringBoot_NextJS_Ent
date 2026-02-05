@@ -1,4 +1,9 @@
 import { apiClient } from './client';
+import {
+  createFilterMapper,
+  mapTextFilter,
+  mapBooleanFilter,
+} from '@/lib/utils/filter-mapper';
 import type {
   ApiResponse,
   PageResponse,
@@ -8,7 +13,7 @@ import type {
   UserSearchParams,
 } from '@/types/api';
 
-const USERS_BASE = '/api/v1/admin/users';
+const USERS_BASE = '/admin/users';
 
 export const usersApi = {
   // Get all users with pagination and filters
@@ -47,7 +52,7 @@ export const usersApi = {
   },
 
   // Delete user
-  deleteUser: async (userId: number) => {
+  deleteUser: async (userId: string | number) => {
     const response = await apiClient.delete<ApiResponse<void>>(
       `${USERS_BASE}/${userId}`
     );
@@ -55,7 +60,7 @@ export const usersApi = {
   },
 
   // Change password
-  changePassword: async (userId: number, newPassword: string) => {
+  changePassword: async (userId: string | number, newPassword: string) => {
     const response = await apiClient.patch<ApiResponse<void>>(
       `${USERS_BASE}/${userId}/password`,
       { newPassword }
@@ -64,7 +69,7 @@ export const usersApi = {
   },
 
   // Lock account
-  lockAccount: async (userId: number) => {
+  lockAccount: async (userId: string | number) => {
     const response = await apiClient.patch<ApiResponse<void>>(
       `${USERS_BASE}/${userId}/lock`
     );
@@ -72,10 +77,44 @@ export const usersApi = {
   },
 
   // Unlock account
-  unlockAccount: async (userId: number) => {
+  unlockAccount: async (userId: string | number) => {
     const response = await apiClient.patch<ApiResponse<void>>(
       `${USERS_BASE}/${userId}/unlock`
     );
     return response.data;
   },
 };
+
+/**
+ * 사용자 필터 값 인터페이스
+ * DataTable에서 입력받은 필터 값의 타입
+ */
+interface UserFilterValues extends Record<string, string> {
+  username: string;
+  displayName: string;
+  department: string;
+  enabled: string;
+  accountLocked: string;
+}
+
+/**
+ * 사용자 필터 매퍼 생성
+ * UI 필터 값을 UserSearchParams로 변환하는 함수를 반환
+ *
+ * @example
+ * ```typescript
+ * const { handleFilter } = useListPage({
+ *   filterMapper: createUserFilterMapper(),
+ *   // ...
+ * });
+ * ```
+ */
+export function createUserFilterMapper() {
+  return createFilterMapper<UserSearchParams, UserFilterValues>({
+    username: mapTextFilter,
+    displayName: mapTextFilter,
+    department: mapTextFilter,
+    enabled: mapBooleanFilter,
+    accountLocked: mapBooleanFilter,
+  });
+}

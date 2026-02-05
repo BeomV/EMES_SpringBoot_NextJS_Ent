@@ -4,7 +4,7 @@ import type { ApiResponse, LoginRequest, LoginResponse } from '@/types/api';
 export const authApi = {
   login: async (data: LoginRequest) => {
     const response = await apiClient.post<ApiResponse<LoginResponse>>(
-      '/api/v1/auth/login',
+      '/auth/login',
       data
     );
     const result = response.data.data;
