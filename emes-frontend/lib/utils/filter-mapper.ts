@@ -193,14 +193,16 @@ export function createFilterMapper<TSearchParams, TFilterValues extends Record<s
       // 해당 필드의 매퍼 함수 찾기
       const mapper = mappings[key as keyof TFilterValues];
 
-      // 매퍼가 있고 값이 빈 문자열이 아니면 변환
-      if (mapper && value !== '') {
+      // 매퍼가 있으면 변환 (빈 문자열도 처리하여 이전 값 제거)
+      if (mapper) {
         // 매퍼 함수 실행
         const mappedValue = mapper(value);
 
-        // undefined가 아니면 결과에 포함
+        // undefined가 아니면 결과에 포함, undefined면 이전 값 제거
         if (mappedValue !== undefined) {
           result[key] = mappedValue;
+        } else {
+          result[key] = undefined;
         }
       }
     }

@@ -117,15 +117,15 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-slate-900 text-white">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white shadow-xl">
       <div className="flex h-full flex-col">
         {/* 로고 */}
-        <div className="flex h-14 items-center border-b border-slate-800 px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-blue-900">
-              <span className="text-sm font-bold">E</span>
+        <div className="flex h-16 items-center border-b border-slate-700/50 px-6 bg-slate-900/50 backdrop-blur-sm">
+          <Link href="/" className="flex items-center gap-3 font-semibold group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20 transition-transform group-hover:scale-105">
+              <span className="text-base font-bold">E</span>
             </div>
-            <span className="text-lg text-white">EMES Platform</span>
+            <span className="text-lg text-white font-semibold tracking-tight">EMES Platform</span>
           </Link>
         </div>
 
@@ -138,13 +138,13 @@ export function Sidebar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-all',
+                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                       isActive(item.href)
-                        ? 'bg-blue-600/90 text-white font-medium shadow-md'
-                        : 'font-medium text-blue-100 hover:bg-blue-700/70 hover:text-white'
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30'
+                        : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="h-5 w-5" />
                     {item.title}
                   </Link>
                 ) : (
@@ -153,19 +153,19 @@ export function Sidebar() {
                       type="button"
                       onClick={() => handleToggle(item.title)}
                       className={cn(
-                        'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-all',
+                        'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                         item.children && hasActiveChild(item.children)
-                          ? 'bg-blue-600/90 font-semibold text-white shadow-md'
-                          : 'font-medium text-blue-100 hover:bg-blue-700/70'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30'
+                          : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className="h-4 w-4" />
+                        <item.icon className="h-5 w-5" />
                         {item.title}
                       </div>
                       <ChevronDown
                         className={cn(
-                          'h-4 w-4 transition-transform duration-200',
+                          'h-4 w-4 transition-transform duration-300',
                           openMenus[item.title] && 'rotate-180'
                         )}
                       />
@@ -173,22 +173,22 @@ export function Sidebar() {
 
                     <div
                       className={cn(
-                        'overflow-hidden transition-all duration-200 ease-in-out',
+                        'overflow-hidden transition-all duration-300 ease-in-out',
                         openMenus[item.title]
                           ? 'max-h-96 opacity-100'
                           : 'max-h-0 opacity-0'
                       )}
                     >
-                      <div className="mt-1.5 space-y-1 pl-6 py-1">
+                      <div className="mt-1 space-y-0.5 pl-9 py-2 border-l border-slate-700/50 ml-5">
                         {item.children?.map((child) => (
                           <Link
                             key={child.href}
                             href={child.href}
                             className={cn(
-                              'block rounded-md px-3 py-1.5 text-sm transition-all',
+                              'block rounded-md px-3 py-2 text-sm font-medium transition-all duration-200',
                               isActive(child.href)
-                                ? 'font-medium text-yellow-300 bg-blue-700/50'
-                                : 'text-blue-100 hover:bg-blue-700/50 hover:text-white'
+                                ? 'text-blue-400 bg-slate-800/70 border-l-2 border-blue-400 -ml-px pl-[11px]'
+                                : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
                             )}
                           >
                             {child.title}
@@ -204,10 +204,10 @@ export function Sidebar() {
         </nav>
 
         {/* 하단 정보 */}
-        <div className="border-t border-slate-800 p-4">
-          <div className="text-xs text-blue-100">
-            <div className="font-semibold">EMES Platform</div>
-            <div>Version 1.0.0</div>
+        <div className="border-t border-slate-700/50 px-4 py-3 bg-slate-900/50">
+          <div className="text-xs text-slate-400">
+            <div className="font-semibold text-slate-300">EMES Platform</div>
+            <div className="mt-0.5">Version 1.0.0</div>
           </div>
         </div>
       </div>

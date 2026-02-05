@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { Toaster } from 'sonner';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -20,6 +21,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </main>
       </div>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { ApiResponse, PageResponse } from './api';
-import type { DataTableColumn, DataTableFilter } from '@/components/common/DataTable';
+import type { DataTableColumn } from '@/components/common/DataTable';
+import type { SearchInputFilter } from '@/components/common/SearchInput';
 
 /**
  * 기본 검색 파라미터 인터페이스
@@ -147,13 +148,13 @@ export interface UseListPageReturn<TData, TSearchParams extends BaseSearchParams
 
 /**
  * 필터 설정 타입
- * DataTable의 filters prop으로 전달할 필터 정의
+ * SearchInput의 filters prop으로 전달할 필터 정의
  */
 export interface FilterConfig {
   /**
-   * DataTable filter 배열
+   * SearchInput filter 배열
    */
-  filters: DataTableFilter[];
+  filters: SearchInputFilter[];
 
   /**
    * 필터의 초기 값 (선택사항)

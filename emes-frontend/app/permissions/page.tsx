@@ -1,18 +1,23 @@
 'use client';
 
+import { useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { SearchInput, type SearchInputFilter, type SearchInputHandle } from '@/components/common/SearchInput';
+import { SearchButton } from '@/components/common/SearchButton';
 import { ActionMenu } from '@/components/common/ActionMenu';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { useListPage } from '@/hooks/list/useListPage';
 import { permissionsApi, createPermissionFilterMapper } from '@/lib/api/permissions';
 import { formatDate } from '@/lib/utils/format';
-import type { Permission, PermissionSearchParams } from '@/types/entities/permission';
+import { Permission, PermissionSearchParams } from '@/types/entities/permission';
 
 export default function PermissionsPage() {
+  const searchInputRef = useRef<SearchInputHandle>(null);
+
   // useListPage hook으로 모든 상태와 로직 관리
   const {
     data: permissions,
@@ -119,61 +124,67 @@ export default function PermissionsPage() {
     },
   ];
 
+  const searchFilters: SearchInputFilter[] = [
+    {
+      key: 'permissionCode',
+      label: '권한 코드',
+      type: 'text',
+      placeholder: '권한 코드',
+    },
+    {
+      key: 'permissionName',
+      label: '권한명',
+      type: 'text',
+      placeholder: '권한명',
+    },
+    {
+      key: 'resource',
+      label: '리소스',
+      type: 'text',
+      placeholder: '리소스',
+    },
+    {
+      key: 'action',
+      label: '액션',
+      type: 'select',
+      options: [
+        { label: 'READ', value: 'READ' },
+        { label: 'WRITE', value: 'WRITE' },
+        { label: 'DELETE', value: 'DELETE' },
+      ],
+    },
+    {
+      key: 'isActive',
+      label: '상태',
+      type: 'select',
+      options: [
+        { label: '활성', value: 'true' },
+        { label: '비활성', value: 'false' },
+      ],
+    },
+  ];
+
   return (
     <DashboardLayout>
       <div className="space-y-4">
         <PageHeader title="권한 관리" description="권한을 관리합니다.">
-          <Button size="sm">
-            <Plus className="h-3.5 w-3.5" />
-            권한 추가
-          </Button>
+          <SearchButton
+            onSearch={() => searchInputRef.current?.search()}
+            onReset={() => searchInputRef.current?.reset()}
+          />
         </PageHeader>
+
+        <SearchInput
+          ref={searchInputRef}
+          filters={searchFilters}
+          onFilter={handleFilter}
+        />
 
         <DataTable
           columns={columns}
           data={permissions}
           loading={loading}
           emptyMessage="권한을 찾을 수 없습니다."
-          filters={[
-            {
-              key: 'permissionCode',
-              label: '권한 코드',
-              type: 'text',
-              placeholder: '권한 코드',
-            },
-            {
-              key: 'permissionName',
-              label: '권한명',
-              type: 'text',
-              placeholder: '권한명',
-            },
-            {
-              key: 'resource',
-              label: '리소스',
-              type: 'text',
-              placeholder: '리소스',
-            },
-            {
-              key: 'action',
-              label: '액션',
-              type: 'select',
-              options: [
-                { label: 'READ', value: 'READ' },
-                { label: 'WRITE', value: 'WRITE' },
-                { label: 'DELETE', value: 'DELETE' },
-              ],
-            },
-            {
-              key: 'isActive',
-              label: '상태',
-              type: 'select',
-              options: [
-                { label: '활성', value: 'true' },
-                { label: '비활성', value: 'false' },
-              ],
-            },
-          ]}
-          onFilter={handleFilter}
           resizableColumns
         />
       </div>

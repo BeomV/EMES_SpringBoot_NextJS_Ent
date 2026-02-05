@@ -1,13 +1,15 @@
 'use client';
 
+import { useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable';
+import { SearchInput, type SearchInputFilter, type SearchInputHandle } from '@/components/common/SearchInput';
+import { SearchButton } from '@/components/common/SearchButton';
 import { Plus } from 'lucide-react';
 import { useListPage } from '@/hooks/list/useListPage';
 import type { BaseSearchParams } from '@/types/list-page';
-import type { DataTableFilter } from '@/components/common/DataTable';
 
 export interface ListPageWrapperProps<
   TData,
@@ -42,7 +44,7 @@ export interface ListPageWrapperProps<
   entityName: string;
 
   /** 필터 설정 */
-  filters: DataTableFilter[];
+  filters: SearchInputFilter[];
 
   /** 초기 파라미터 (선택사항) */
   defaultParams?: Partial<TSearchParams>;
@@ -86,6 +88,8 @@ export function ListPageWrapper<
   filters,
   defaultParams,
 }: ListPageWrapperProps<TData, TSearchParams>) {
+  const searchInputRef = useRef<SearchInputHandle>(null);
+
   const { data, loading, handleFilter, handleDelete } = useListPage<
     TData,
     TSearchParams
@@ -104,19 +108,23 @@ export function ListPageWrapper<
     <DashboardLayout>
       <div className="space-y-4">
         <PageHeader title={title} description={description}>
-          <Button size="sm">
-            <Plus className="h-3.5 w-3.5" />
-            {addButtonLabel}
-          </Button>
+          <SearchButton
+            onSearch={() => searchInputRef.current?.search()}
+            onReset={() => searchInputRef.current?.reset()}
+          />
         </PageHeader>
+
+        <SearchInput
+          ref={searchInputRef}
+          filters={filters}
+          onFilter={handleFilter}
+        />
 
         <DataTable<TData>
           columns={resolvedColumns}
           data={data}
           loading={loading}
           emptyMessage={`${entityName}을(를) 찾을 수 없습니다.`}
-          filters={filters}
-          onFilter={handleFilter}
           resizableColumns
         />
       </div>

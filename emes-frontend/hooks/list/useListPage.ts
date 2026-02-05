@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 import { useListData } from './useListData';
 import { useListFilter } from './useListFilter';
 import type { ListPageConfig, UseListPageReturn, BaseSearchParams } from '@/types/list-page';
@@ -124,7 +125,7 @@ export function useListPage<
   const handleDelete = async (id: number | string) => {
     // API가 구성되지 않은 경우
     if (!config.api.delete) {
-      console.warn('Delete API not configured');
+      toast.error('삭제 기능이 설정되지 않았습니다');
       return;
     }
 
@@ -143,10 +144,12 @@ export function useListPage<
       // 성공 시 데이터 재조회
       await loadData();
 
-      // TODO: 성공 토스트 표시
+      // 성공 토스트 표시
+      toast.success(`${entityName}이(가) 삭제되었습니다`);
     } catch (error) {
       console.error('Failed to delete:', error);
-      // TODO: 에러 토스트 표시
+      // 에러 토스트 표시
+      toast.error(`${entityName} 삭제에 실패했습니다`);
     }
   };
 
@@ -177,7 +180,7 @@ export function useListPage<
     const action = config.api.customActions?.[actionName];
 
     if (!action) {
-      console.warn(`Custom action '${actionName}' not found`);
+      toast.error(`'${actionName}' 액션을 찾을 수 없습니다`);
       return;
     }
 
@@ -188,10 +191,12 @@ export function useListPage<
       // 성공 시 데이터 재조회
       await loadData();
 
-      // TODO: 성공 토스트 표시
+      // 성공 토스트 표시
+      toast.success('작업이 완료되었습니다');
     } catch (error) {
       console.error(`Failed to execute ${actionName}:`, error);
-      // TODO: 에러 토스트 표시
+      // 에러 토스트 표시
+      toast.error('작업 실행에 실패했습니다');
     }
   };
 
