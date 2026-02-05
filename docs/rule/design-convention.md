@@ -181,7 +181,9 @@ import { PageHeader } from '@/components/common/PageHeader'
 
 ### 7.2 DataTable
 
-엔터프라이즈 테이블 컴포넌트. 다중 필터, 칼럼 리사이즈, 페이지네이션, 로딩/빈 상태 내장.
+엔터프라이즈 테이블 컴포넌트. 다중 필터, 칼럼 리사이즈, 로딩/빈 상태 내장.
+
+> **참고:** 이 프로젝트에서는 페이지네이션을 사용하지 않습니다. 모든 데이터를 한 번에 표시합니다.
 
 ```tsx
 import { DataTable, type DataTableColumn } from '@/components/common/DataTable'
@@ -206,10 +208,6 @@ const columns: DataTableColumn<User>[] = [
   ]}
   onFilter={handleFilter}
   resizableColumns
-  currentPage={page}
-  totalPages={totalPages}
-  totalCount={totalCount}
-  onPageChange={setPage}
 />
 ```
 
@@ -217,13 +215,12 @@ const columns: DataTableColumn<User>[] = [
 
 | 속성 | 타입 | 설명 |
 |------|------|------|
-| `columns` | DataTableColumn[] | 컬럼 정의 (key, header, width, align, render) |
+| `columns` | DataTableColumn[] | 컬럼 정의 (key, header, width, align, render, resizable, minWidth) |
 | `data` | T[] | 표시할 데이터 배열 |
 | `loading` | boolean? | 로딩 스피너 표시 |
 | `emptyMessage` | string? | 빈 상태 메시지 (기본: "데이터가 없습니다.") |
-| `currentPage` / `totalPages` | number | 페이지네이션 상태 |
-| `onPageChange` | (page: number) => void | 페이지 변경 콜백 |
-| `actions` | ReactNode? | 액션 버튼 영역 |
+| `actions` | ReactNode? | 우측 액션 버튼 영역 |
+| `resizableColumns` | boolean? | 칼럼 리사이즈 활성화 (기본: false) |
 
 #### 필터 Props
 
