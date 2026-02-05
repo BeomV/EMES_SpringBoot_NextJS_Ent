@@ -1,3 +1,7 @@
+SET QUOTED_IDENTIFIER ON;
+SET ANSI_NULLS ON;
+GO
+
 -- ===================================================================
 -- EMES Platform - Core Tables DDL Script
 -- Database: MS SQL Server
