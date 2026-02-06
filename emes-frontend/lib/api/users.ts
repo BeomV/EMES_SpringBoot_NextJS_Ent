@@ -13,7 +13,7 @@ import type {
   UserSearchParams,
 } from '@/types/api';
 
-const USERS_BASE = '/api/v1/admin/users';
+const USERS_BASE = '/admin/users';
 
 export const usersApi = {
   // Get all users with pagination and filters

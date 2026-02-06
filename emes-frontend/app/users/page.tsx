@@ -8,8 +8,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, type DataTableColumn, type DataTableHandle } from '@/components/common/DataTable';
 import { SearchInput, type SearchInputFilter, type SearchInputHandle } from '@/components/common/SearchInput';
 import { SearchButton } from '@/components/common/SearchButton';
-import { ActionMenu } from '@/components/common/ActionMenu';
-import { Plus, Edit, Trash2, Lock, Unlock, Key, Save } from 'lucide-react';
+import { Trash2, Save, Plus } from 'lucide-react';
 import { useListPage } from '@/hooks/list/useListPage';
 import { usersApi, createUserFilterMapper } from '@/lib/api/users';
 import { formatDate } from '@/lib/utils/format';
@@ -20,71 +19,54 @@ export default function UsersPage() {
   const dataTableRef = useRef<DataTableHandle>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // 모든 상태와 로직이 통합된 hook 하나로!
+  // 데이터 상태 관리
   const {
     data: users,
     loading,
-    handleFilter,
-    handleDelete,
-    handleCustomAction,
+    refresh,
   } = useListPage<User, UserSearchParams>({
     api: {
       list: usersApi.getUsers,
-      delete: usersApi.deleteUser,
-      customActions: {
-        lock: usersApi.lockAccount,
-        unlock: usersApi.unlockAccount,
-      },
     },
     filterMapper: createUserFilterMapper(),
     getEntityId: (user) => user.userId,
     entityName: '사용자',
   });
 
-  // 잠금/해제 토글 (간결해짐)
-  const handleLockToggle = (user: User) => {
-    const action = user.accountLocked ? 'unlock' : 'lock';
-    handleCustomAction(action, user.userId);
-  };
+  // 조회
+  const QueryClick = async (filters?: Record<string, string>) => {
+    const filterMapper = createUserFilterMapper();
+    const filterValues = filters || searchInputRef.current?.getValues() || {};
+    const mappedFilters = filterMapper(filterValues);
 
-  // 행 업데이트 핸들러 (편집 모드)
-  const handleUpdate = async (user: User) => {
     try {
-      await usersApi.updateUser(user.userId, user);
-      // 성공 시 목록 재조회
-      await handleFilter({});
+      await usersApi.getUsers(mappedFilters as UserSearchParams);
+      await refresh();
     } catch (error) {
-      console.error('Update error:', error);
-      throw error;
+      console.error('Query error:', error);
     }
   };
 
-  // 일괄 삭제 핸들러 (체크박스 선택)
-  const handleBulkDelete = async (users: User[]) => {
-    try {
-      await Promise.all(users.map(user => usersApi.deleteUser(user.userId)));
-      // 성공 시 목록 재조회
-      await handleFilter({});
-    } catch (error) {
-      console.error('Bulk delete error:', error);
-      throw error;
-    }
+  // 행추가
+  const NewClick = async () => {
+    // TODO: 새 행 추가 로직 구현
+    console.log('New row');
   };
 
-  // 저장 버튼 핸들러 (편집 모드)
-  const handleSaveClick = async () => {
+  // 저장
+  const SaveClick = async () => {
     if (!dataTableRef.current) return;
+
     try {
       await dataTableRef.current.saveEdit();
-      // 성공 시 목록 재조회
-      await handleFilter({});
+      await refresh();
     } catch (error) {
-      // 에러는 DataTable에서 이미 처리됨
+      console.error('Save error:', error);
     }
   };
 
-  // 삭제 버튼 핸들러 (체크박스 선택)
-  const handleDeleteClick = async () => {
+  // 삭제
+  const DeleteClick = async () => {
     if (!dataTableRef.current) return;
 
     const selectedUsers = dataTableRef.current.getSelectedRows() as User[];
@@ -92,8 +74,35 @@ export default function UsersPage() {
       return;
     }
 
-    await handleBulkDelete(selectedUsers);
-    dataTableRef.current.clearSelection();
+    try {
+      await Promise.all(selectedUsers.map(user => usersApi.deleteUser(user.userId)));
+      await refresh();
+      dataTableRef.current.clearSelection();
+    } catch (error) {
+      console.error('Delete error:', error);
+    }
+  };
+
+  // 행 업데이트 (편집 모드)
+  const handleUpdate = async (user: User) => {
+    try {
+      await usersApi.updateUser(user.userId, user);
+      await refresh();
+    } catch (error) {
+      console.error('Update error:', error);
+      throw error;
+    }
+  };
+
+  // 일괄 삭제 (내부용)
+  const handleBulkDelete = async (users: User[]) => {
+    try {
+      await Promise.all(users.map(user => usersApi.deleteUser(user.userId)));
+      await refresh();
+    } catch (error) {
+      console.error('Bulk delete error:', error);
+      throw error;
+    }
   };
 
   const columns: DataTableColumn<User>[] = [
@@ -102,7 +111,7 @@ export default function UsersPage() {
       header: '사용자 ID',
       width: '120px',
       allowSort: true,
-      allowBlank: false,  // 필수 입력
+      allowBlank: true,  // 필수 입력
       render: (_, row) => (
         <span className="font-medium">{row.username}</span>
       ),
@@ -149,43 +158,16 @@ export default function UsersPage() {
     {
       key: 'createdAt',
       header: '등록일',
-      width: '100px',
+      width: '200px',
       allowSort: true,
       render: (_, row) => (
         <span className="text-muted-foreground">{formatDate(row.createdAt)}</span>
       ),
     },
-    {
-      key: 'actions',
-      header: '',
-      width: '40px',
-      align: 'center',
-      resizable: false,
-      render: (_, row) => (
-        <ActionMenu
-          size="sm"
-          items={[
-            { label: '수정', icon: Edit },
-            { label: '비밀번호 변경', icon: Key },
-            {
-              label: row.accountLocked ? '잠금 해제' : '계정 잠금',
-              icon: row.accountLocked ? Unlock : Lock,
-              onClick: () => handleLockToggle(row),
-            },
-            {
-              label: '삭제',
-              icon: Trash2,
-              variant: 'destructive',
-              onClick: () => handleDelete(row.userId),
-            },
-          ]}
-        />
-      ),
-    },
   ];
 
   const searchFilters: SearchInputFilter[] = [
-    { key: 'username', label: '사용자 ID', type: 'text', placeholder: '사용자 ID', required: true },
+    { key: 'username', label: '사용자 ID', type: 'text', placeholder: '사용자 ID'},
     { key: 'displayName', label: '이름', type: 'text', placeholder: '이름' },
     { key: 'department', label: '부서', type: 'text', placeholder: '부서' },
     {
@@ -204,28 +186,39 @@ export default function UsersPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4">
+      <div className="h-full flex flex-col gap-3">
         <PageHeader title="사용자 관리" description="사용자 계정 및 권한을 관리합니다.">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <SearchButton
-              onSearch={() => searchInputRef.current?.search()}
+              onSearch={QueryClick}
               onReset={() => searchInputRef.current?.reset()}
             />
             <Button
               size="sm"
-              variant="default"
-              onClick={handleSaveClick}
-              disabled={!isEditing}
+              variant="outline"
+              onClick={NewClick}
+              className="h-6 w-14 px-3.5 py-0.5 text-[10px] font-medium border-green-500 text-green-600 bg-white shadow hover:bg-green-50 hover:shadow-lg transition-all"
             >
-              <Save className="h-3.5 w-3.5 mr-1" />
+              <Plus className="h-3 w-3" />
+              행추가
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={SaveClick}
+              disabled={!isEditing}
+              className="h-6 w-14 px-3.5 py-0.5 text-[10px] font-medium border-blue-500 text-blue-600 bg-white shadow hover:bg-blue-50 hover:shadow-lg transition-all"
+            >
+              <Save className="h-3 w-3" />
               저장
             </Button>
             <Button
               size="sm"
-              variant="destructive"
-              onClick={handleDeleteClick}
+              variant="outline"
+              onClick={DeleteClick}
+              className="h-6 w-14 px-3.5 py-0.5 text-[10px] font-medium border-red-500 text-red-600 bg-white shadow hover:bg-red-50 hover:shadow-lg transition-all"
             >
-              <Trash2 className="h-3.5 w-3.5 mr-1" />
+              <Trash2 className="h-3 w-3" />
               삭제
             </Button>
           </div>
@@ -234,24 +227,27 @@ export default function UsersPage() {
         <SearchInput
           ref={searchInputRef}
           filters={searchFilters}
-          onFilter={handleFilter}
+          onFilter={QueryClick}
           grid={{ count: 8 }}
         />
 
-        <DataTable
-          ref={dataTableRef}
-          columns={columns}
-          data={users}
-          loading={loading}
-          emptyMessage="사용자를 찾을 수 없습니다."
-          resizableColumns
-          editable
-          selectable
-          onUpdate={handleUpdate}
-          onBulkDelete={handleBulkDelete}
-          onEditChange={setIsEditing}
-          getRowId={(user) => user.userId}
-        />
+        <div className="flex-1 min-h-0">
+          <DataTable
+            ref={dataTableRef}
+            title="사용자 목록"
+            columns={columns}
+            data={users}
+            loading={loading}
+            emptyMessage="사용자를 찾을 수 없습니다."
+            resizableColumns
+            editable
+            selectable
+            onUpdate={handleUpdate}
+            onBulkDelete={handleBulkDelete}
+            onEditChange={setIsEditing}
+            getRowId={(user) => user.userId}
+          />
+        </div>
       </div>
     </DashboardLayout>
   );

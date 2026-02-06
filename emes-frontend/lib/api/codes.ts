@@ -11,7 +11,7 @@ import type {
   CodeSearchParams,
 } from '@/types/entities/code';
 
-const CODES_BASE = '/api/v1/admin/codes';
+const CODES_BASE = '/admin/codes';
 
 /**
  * 기본 CRUD API 자동 생성

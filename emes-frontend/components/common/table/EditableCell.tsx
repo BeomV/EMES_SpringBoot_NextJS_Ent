@@ -49,14 +49,14 @@ export function EditableCell<T extends object>({
     return (
       <TableCell
         className={cn(
-          'p-1',
+          'p-0.5',
           align === 'center' && 'text-center',
           align === 'right' && 'text-right',
           className
         )}
       >
         <Input
-          className="h-7 text-xs"
+          className="h-6 text-xs px-2"
           value={String(value ?? '')}
           onChange={(e) => onChange?.(cellKey, e.target.value)}
           onClick={(e) => e.stopPropagation()}

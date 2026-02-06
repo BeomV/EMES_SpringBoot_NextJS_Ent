@@ -39,6 +39,7 @@ interface DataTableProps<T extends object> {
   data: T[]
   loading?: boolean
   emptyMessage?: string
+  title?: string  // 테이블 타이틀
   resizableColumns?: boolean
   editable?: boolean  // 편집 가능 여부
   selectable?: boolean  // 체크박스 선택 가능 여부
@@ -158,6 +159,7 @@ function DataTableInner<T extends object>({
   data,
   loading = false,
   emptyMessage = "데이터가 없습니다.",
+  title,
   resizableColumns = false,
   editable = false,
   selectable = false,
@@ -177,6 +179,9 @@ function DataTableInner<T extends object>({
     key: string
     direction: 'asc' | 'desc'
   } | null>(null)
+
+  // Active row state (for footer display)
+  const [activeRowIndex, setActiveRowIndex] = React.useState<number | null>(null)
 
   // Column resize
   const { columnWidths, handleMouseDown, tableRef } = useColumnResize(
@@ -425,8 +430,9 @@ function DataTableInner<T extends object>({
     }
   }, [editingData, onEditChange])
 
-  // Handle row click (start edit)
+  // Handle row click (start edit or set active row)
   const handleRowClick = (row: T, rowIndex: number) => {
+    setActiveRowIndex(rowIndex) // Always set active row
     if (!editable) return
     if (isEditing(row, rowIndex)) return
     startEdit(row, rowIndex)
@@ -449,32 +455,54 @@ function DataTableInner<T extends object>({
     }
   }
 
+  // Calculate minimum table width (sum of all column widths)
+  const minTableWidth = React.useMemo(() => {
+    if (!resizableColumns) return undefined
+
+    let total = 5 // row selector
+    if (selectable) total += 20 // checkbox column
+
+    // Add all column widths
+    columnWidths.forEach(width => {
+      total += width
+    })
+
+    return total
+  }, [resizableColumns, selectable, columnWidths])
+
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("h-full flex flex-col gap-3", className)}>
       {/* Table */}
-      <div className="rounded-md border shadow-sm overflow-x-auto select-none">
+      <div className="flex-1 rounded-md border shadow-sm overflow-auto">
+        {title && (
+          <div className="sticky top-0 z-20 bg-gradient-to-r from-slate-50 to-slate-100 border-b px-3 py-1.5 shadow-sm">
+            <h3 className="text-xs font-semibold text-slate-700">{title}</h3>
+          </div>
+        )}
         <Table
           unwrapped
           ref={tableRef}
-          className={cn(resizableColumns && "table-fixed")}
+          className={cn("w-full", title && "[&_thead]:!top-[28px]")}
+          style={minTableWidth ? { minWidth: `${minTableWidth}px` } : undefined}
         >
           <colgroup>
-            <col style={{ width: '6px' }} />
-            {selectable && <col style={{ width: '25px' }} />}
+            <col style={{ width: '5px' }} />
+            {selectable && <col style={{ width: '20px' }} />}
             {resizableColumns && columns.map((col, i) => (
               <col key={col.key} style={{ width: `${columnWidths[i]}px` }} />
             ))}
-            {editable && <col style={{ width: '50px' }} />}
+            {/* Empty column to fill remaining space */}
+            <col />
           </colgroup>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-1.5 px-0" />
+              <TableHead className="w-1 px-0" />
               {selectable && (
                 <TableHead
-                  className="w-[25px] text-center cursor-pointer hover:bg-muted/50"
+                  className="w-[20px] text-center cursor-pointer hover:bg-muted/50 whitespace-nowrap"
                   onClick={toggleAll}
                 >
-                  <span className="text-xs">선택</span>
+                  <span className="text-[10px]">선택</span>
                 </TableHead>
               )}
               {columns.map((col, colIndex) => {
@@ -492,7 +520,7 @@ function DataTableInner<T extends object>({
                         : undefined
                     }
                     className={cn(
-                      "relative select-none",
+                      "relative select-none whitespace-nowrap",
                       col.align === "center" && "text-center",
                       col.align === "right" && "text-right",
                       isSortable && "cursor-pointer hover:bg-muted/50"
@@ -504,18 +532,18 @@ function DataTableInner<T extends object>({
                         {col.header}
                       </span>
                       {isRequired && (
-                        <span className="text-destructive text-xs">*</span>
+                        <span className="text-destructive text-[10px]">*</span>
                       )}
                       {isSortable && (
                         <span className="text-muted-foreground">
                           {isSorted ? (
                             sortState.direction === 'asc' ? (
-                              <ArrowUp className="h-3 w-3" />
+                              <ArrowUp className="h-2.5 w-2.5" />
                             ) : (
-                              <ArrowDown className="h-3 w-3" />
+                              <ArrowDown className="h-2.5 w-2.5" />
                             )
                           ) : (
-                            <ArrowUpDown className="h-3 w-3" />
+                            <ArrowUpDown className="h-2.5 w-2.5" />
                           )}
                         </span>
                       )}
@@ -531,25 +559,24 @@ function DataTableInner<T extends object>({
                   </TableHead>
                 )
               })}
-              {editable && (
-                <TableHead className="w-[50px]" />
-              )}
+              {/* Empty column to fill remaining space */}
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length + 1 + (selectable ? 1 : 0) + (editable ? 1 : 0)} className="h-32">
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-xs">로딩 중...</span>
+                <TableCell colSpan={columns.length + 1 + (selectable ? 1 : 0) + 1} className="h-20">
+                  <div className="flex items-center justify-center gap-1 text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="text-[9px]">로딩 중...</span>
                   </div>
                 </TableCell>
               </TableRow>
             ) : sortedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length + 1 + (selectable ? 1 : 0) + (editable ? 1 : 0)} className="h-32">
-                  <div className="flex items-center justify-center text-xs text-muted-foreground">
+                <TableCell colSpan={columns.length + 1 + (selectable ? 1 : 0) + 1} className="h-20">
+                  <div className="flex items-center justify-center text-[9px] text-muted-foreground">
                     {emptyMessage}
                   </div>
                 </TableCell>
@@ -564,6 +591,11 @@ function DataTableInner<T extends object>({
                 return (
                   <TableRow
                     key={(record.id as string | number) ?? rowIndex}
+                    onClick={(e) => {
+                      // Don't trigger if clicking on checkbox or buttons
+                      if ((e.target as HTMLElement).closest('button, input[type="checkbox"]')) return
+                      setActiveRowIndex(rowIndex)
+                    }}
                     onDoubleClick={(e) => {
                       // Don't trigger row click if clicking on checkbox or buttons
                       if ((e.target as HTMLElement).closest('button, input[type="checkbox"]')) return
@@ -571,7 +603,8 @@ function DataTableInner<T extends object>({
                     }}
                     className={cn(
                       editable && !isCurrentlyEditing && "cursor-pointer",
-                      isCurrentlyEditing && "bg-blue-50"
+                      isCurrentlyEditing && "bg-blue-50",
+                      activeRowIndex === rowIndex && !isCurrentlyEditing && "bg-slate-100"
                     )}
                   >
                     {/* Row selector cell */}
@@ -583,20 +616,34 @@ function DataTableInner<T extends object>({
                       }}
                     >
                       <div className="flex items-center justify-center h-full">
-                        <ChevronRight className="h-2.5 w-2.5 text-muted-foreground/30 group-hover:text-primary transition-colors" />
+                        <ChevronRight className="h-2 w-2 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                       </div>
                     </TableCell>
 
-                    {/* Checkbox cell */}
+                    {/* Checkbox cell or Cancel button (edit mode) */}
                     {selectable && (
-                      <TableCell className="w-[25px] p-0" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="w-[20px] p-0" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-center">
-                          <Checkbox
-                            checked={isCurrentRowSelected}
-                            onCheckedChange={() => toggleRow(row, rowIndex)}
-                            aria-label="행 선택"
-                            className="h-3 w-3"
-                          />
+                          {editable && isCurrentlyEditing ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-4 w-4 p-0 hover:bg-red-50"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                cancelEdit()
+                              }}
+                            >
+                              <X className="h-2.5 w-2.5 text-red-600" />
+                            </Button>
+                          ) : (
+                            <Checkbox
+                              checked={isCurrentRowSelected}
+                              onCheckedChange={() => toggleRow(row, rowIndex)}
+                              aria-label="행 선택"
+                              className="h-2.5 w-2.5"
+                            />
+                          )}
                         </div>
                       </TableCell>
                     )}
@@ -612,13 +659,38 @@ function DataTableInner<T extends object>({
                       const isLeftEdge = bounds && isSelected && colIndex === bounds.minCol
                       const isRightEdge = bounds && isSelected && colIndex === bounds.maxCol
 
-                      // Use EditableCell if editable mode
-                      if (editable) {
+                      // Editable cell - not in edit mode (supports cell selection)
+                      if (editable && !isCurrentlyEditing) {
+                        return (
+                          <TableCell
+                            key={col.key}
+                            onMouseDown={(e) => handleCellMouseDown(rowIndex, colIndex, e)}
+                            onMouseEnter={() => handleCellMouseEnter(rowIndex, colIndex)}
+                            className={cn(
+                              "truncate cursor-default transition-colors relative whitespace-nowrap",
+                              isSelected && "bg-primary/5",
+                              isTopEdge && "border-t-2 border-t-primary",
+                              isBottomEdge && "border-b-2 border-b-primary",
+                              isLeftEdge && "border-l-2 border-l-primary",
+                              isRightEdge && "border-r-2 border-r-primary",
+                              col.align === "center" && "text-center",
+                              col.align === "right" && "text-right"
+                            )}
+                          >
+                            {col.render
+                              ? col.render(record[col.key], row, rowIndex)
+                              : (record[col.key] as React.ReactNode) ?? "-"}
+                          </TableCell>
+                        )
+                      }
+
+                      // Editable cell - in edit mode (uses EditableCell)
+                      if (editable && isCurrentlyEditing) {
                         return (
                           <EditableCell
                             key={col.key}
                             isEditing={isCurrentlyEditing}
-                            value={isCurrentlyEditing ? (editingData as Record<string, unknown>)?.[col.key] : record[col.key]}
+                            value={(editingData as Record<string, unknown>)?.[col.key]}
                             row={row}
                             rowIndex={rowIndex}
                             cellKey={col.key}
@@ -643,7 +715,7 @@ function DataTableInner<T extends object>({
                           onMouseDown={(e) => handleCellMouseDown(rowIndex, colIndex, e)}
                           onMouseEnter={() => handleCellMouseEnter(rowIndex, colIndex)}
                           className={cn(
-                            "truncate cursor-default transition-colors relative",
+                            "truncate cursor-default transition-colors relative whitespace-nowrap",
                             isSelected && "bg-primary/5",
                             isTopEdge && "border-t-2 border-t-primary",
                             isBottomEdge && "border-b-2 border-b-primary",
@@ -660,24 +732,8 @@ function DataTableInner<T extends object>({
                       )
                     })}
 
-                    {/* Edit mode actions */}
-                    {editable && isCurrentlyEditing && (
-                      <TableCell className="w-[50px]">
-                        <div className="flex items-center justify-center">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              cancelEdit()
-                            }}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    )}
+                    {/* Empty column to fill remaining space */}
+                    <TableCell />
                   </TableRow>
                 )
               })
@@ -685,6 +741,25 @@ function DataTableInner<T extends object>({
           </TableBody>
         </Table>
       </div>
+
+      {/* Footer */}
+      {!loading && sortedData.length > 0 && (
+        <div className="flex items-center justify-between px-2 py-1 border rounded-md bg-muted/20 text-[9px] text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span>총 <span className="font-semibold text-foreground">{sortedData.length}</span>개 행</span>
+            {activeRowIndex !== null && (
+              <span className="text-primary font-medium">
+                {activeRowIndex + 1}번째 행 선택됨
+              </span>
+            )}
+          </div>
+          {selectedCount > 0 && (
+            <span>
+              <span className="font-semibold text-foreground">{selectedCount}</span>개 항목 선택됨
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }

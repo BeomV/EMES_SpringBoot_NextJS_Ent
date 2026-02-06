@@ -11,7 +11,7 @@ import type {
   PermissionSearchParams,
 } from '@/types/entities/permission';
 
-const PERMISSIONS_BASE = '/api/v1/admin/permissions';
+const PERMISSIONS_BASE = '/admin/permissions';
 
 /**
  * 기본 CRUD API 자동 생성

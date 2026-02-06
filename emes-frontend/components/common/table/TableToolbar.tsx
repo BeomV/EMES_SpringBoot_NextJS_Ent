@@ -26,9 +26,9 @@ export function TableToolbar({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border-b border-blue-200">
-      <span className="text-sm text-blue-700 font-medium">
-        {selectedCount}개 선택됨
+    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border-b border-slate-200">
+      <span className="text-xs text-slate-600 font-medium">
+        {selectedCount}개 선택
       </span>
 
       <div className="flex-1" />
@@ -36,11 +36,11 @@ export function TableToolbar({
       {showSave && onSave && (
         <Button
           size="sm"
-          variant="default"
-          className="h-7"
+          variant="outline"
+          className="h-6 w-14 px-3.5 py-0.5 text-[10px] font-medium border-blue-500 text-blue-600 bg-white shadow hover:bg-blue-50 hover:shadow-lg transition-all"
           onClick={onSave}
         >
-          <Save className="h-3.5 w-3.5 mr-1" />
+          <Save className="h-3 w-3" />
           저장
         </Button>
       )}
@@ -48,11 +48,11 @@ export function TableToolbar({
       {onDelete && (
         <Button
           size="sm"
-          variant="destructive"
-          className="h-7"
+          variant="outline"
+          className="h-6 w-14 px-3.5 py-0.5 text-[10px] font-medium border-red-500 text-red-600 bg-white shadow hover:bg-red-50 hover:shadow-lg transition-all"
           onClick={onDelete}
         >
-          <Trash2 className="h-3.5 w-3.5 mr-1" />
+          <Trash2 className="h-3 w-3" />
           삭제
         </Button>
       )}

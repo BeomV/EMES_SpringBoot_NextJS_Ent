@@ -49,7 +49,14 @@
       "Bash(cmd /c \"netstat -ano | findstr :3001\")",
       "Bash(grep:*)",
       "Bash(npm install:*)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(PORT=3000 npm run dev:*)",
+      "Bash(./gradlew bootRun:*)",
+      "Bash(./gradlew.bat bootRun:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(docker logs:*)",
+      "Bash(if exist .next rmdir /s /q .next)"
     ]
   }
 }

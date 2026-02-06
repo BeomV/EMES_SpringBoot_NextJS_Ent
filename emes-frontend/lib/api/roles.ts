@@ -13,7 +13,7 @@ import type {
   RoleSearchParams,
 } from '@/types/entities/role';
 
-const ROLES_BASE = '/api/v1/admin/roles';
+const ROLES_BASE = '/admin/roles';
 
 /**
  * 기본 CRUD API 자동 생성
