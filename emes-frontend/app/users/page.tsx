@@ -10,7 +10,8 @@ import { SearchInput, type SearchInputFilter, type SearchInputHandle } from '@/c
 import { SearchButton } from '@/components/common/SearchButton';
 import { Trash2, Save, Plus } from 'lucide-react';
 import { useListPage } from '@/hooks/list/useListPage';
-import { usersApi, createUserFilterMapper } from '@/lib/api/users';
+import { userService } from '@/services/UserService';
+import { createUserFilterMapper } from '@/lib/api/users';
 import { formatDate } from '@/lib/utils/format';
 import type { User, UserSearchParams } from '@/types/api';
 
@@ -26,7 +27,7 @@ export default function UsersPage() {
     refresh,
   } = useListPage<User, UserSearchParams>({
     api: {
-      list: usersApi.getUsers,
+      list: userService.getUsers.bind(userService),
     },
     filterMapper: createUserFilterMapper(),
     getEntityId: (user) => user.userId,
@@ -40,7 +41,7 @@ export default function UsersPage() {
     const mappedFilters = filterMapper(filterValues);
 
     try {
-      await usersApi.getUsers(mappedFilters as UserSearchParams);
+      await userService.getUsers(mappedFilters as UserSearchParams);
       await refresh();
     } catch (error) {
       console.error('Query error:', error);
@@ -75,7 +76,9 @@ export default function UsersPage() {
     }
 
     try {
-      await Promise.all(selectedUsers.map(user => usersApi.deleteUser(user.userId)));
+      await Promise.all(
+        selectedUsers.map(user => userService.deleteUser(user.userId))
+      );
       await refresh();
       dataTableRef.current.clearSelection();
     } catch (error) {
@@ -86,7 +89,7 @@ export default function UsersPage() {
   // 행 업데이트 (편집 모드)
   const handleUpdate = async (user: User) => {
     try {
-      await usersApi.updateUser(user.userId, user);
+      await userService.updateUser(user.userId, user);
       await refresh();
     } catch (error) {
       console.error('Update error:', error);
@@ -97,7 +100,9 @@ export default function UsersPage() {
   // 일괄 삭제 (내부용)
   const handleBulkDelete = async (users: User[]) => {
     try {
-      await Promise.all(users.map(user => usersApi.deleteUser(user.userId)));
+      await Promise.all(
+        users.map(user => userService.deleteUser(user.userId))
+      );
       await refresh();
     } catch (error) {
       console.error('Bulk delete error:', error);

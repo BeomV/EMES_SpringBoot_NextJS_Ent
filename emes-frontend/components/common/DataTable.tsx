@@ -473,7 +473,7 @@ function DataTableInner<T extends object>({
   return (
     <div className={cn("h-full flex flex-col gap-3", className)}>
       {/* Table */}
-      <div className="flex-1 rounded-md border shadow-sm overflow-auto">
+      <div className="flex-1 rounded-md border shadow-sm overflow-auto custom-scrollbar">
         {title && (
           <div className="sticky top-0 z-20 bg-gradient-to-r from-slate-50 to-slate-100 border-b px-3 py-1.5 shadow-sm">
             <h3 className="text-xs font-semibold text-slate-700">{title}</h3>
