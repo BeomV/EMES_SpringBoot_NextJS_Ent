@@ -27,7 +27,7 @@ export default function UsersPage() {
     refresh,
   } = useListPage<User, UserSearchParams>({
     api: {
-      list: userService.getUsers.bind(userService),
+      list: (params) => userService.getUsers(params),
     },
     filterMapper: createUserFilterMapper(),
     getEntityId: (user) => user.userId,
