@@ -21,7 +21,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </main>
       </div>
-      <Toaster position="top-right" richColors />
+      <Toaster
+        position="bottom-right"
+        richColors
+        closeButton
+        expand
+        duration={3000}
+        visibleToasts={3}
+        toastOptions={{
+          classNames: {
+            toast: 'rounded-sm shadow-xl border bg-white',
+            title: 'text-base font-semibold text-gray-900',
+            description: 'text-sm text-gray-500 mt-0.5',
+            actionButton: 'bg-primary text-primary-foreground rounded-sm',
+            cancelButton: 'bg-muted text-muted-foreground rounded-sm',
+            closeButton: 'text-gray-400 hover:text-gray-600 transition-colors',
+            icon: 'w-6 h-6',
+            success: 'border-l-4 border-l-green-500 bg-white',
+            error: 'border-l-4 border-l-red-500 bg-white',
+            warning: 'border-l-4 border-l-yellow-500 bg-white',
+            info: 'border-l-4 border-l-blue-500 bg-white',
+          },
+        }}
+      />
     </div>
   );
 }

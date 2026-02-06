@@ -1,14 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/common/PageHeader';
 import { DataTable, type DataTableColumn, type DataTableHandle } from '@/components/common/DataTable';
 import { SearchInput, type SearchInputFilter, type SearchInputHandle } from '@/components/common/SearchInput';
-import { SearchButton } from '@/components/common/SearchButton';
-import { Trash2, Save, Plus } from 'lucide-react';
 import { useListPage } from '@/hooks/list/useListPage';
 import { userService } from '@/services/UserService';
 import { createUserFilterMapper } from '@/lib/api/users';
@@ -19,6 +17,13 @@ export default function UsersPage() {
   const searchInputRef = useRef<SearchInputHandle>(null);
   const dataTableRef = useRef<DataTableHandle>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedCount, setSelectedCount] = useState(0);
+
+  // 안정적인 API 함수 참조 (useCallback으로 메모이제이션)
+  const getUsersApi = useCallback(
+    (params: UserSearchParams) => userService.getUsers(params),
+    []
+  );
 
   // 데이터 상태 관리
   const {
@@ -27,17 +32,23 @@ export default function UsersPage() {
     refresh,
   } = useListPage<User, UserSearchParams>({
     api: {
-      list: (params) => userService.getUsers(params),
+      list: getUsersApi,
     },
     filterMapper: createUserFilterMapper(),
     getEntityId: (user) => user.userId,
     entityName: '사용자',
   });
 
+  // 신규
+  const NewClick = async () => {
+    // TODO: 새 행 추가 로직 구현
+    console.log('New row');
+  };
+
   // 조회
-  const QueryClick = async (filters?: Record<string, string>) => {
+  const QueryClick = async () => {
     const filterMapper = createUserFilterMapper();
-    const filterValues = filters || searchInputRef.current?.getValues() || {};
+    const filterValues = searchInputRef.current?.getValues() || {};
     const mappedFilters = filterMapper(filterValues);
 
     try {
@@ -46,12 +57,6 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Query error:', error);
     }
-  };
-
-  // 행추가
-  const NewClick = async () => {
-    // TODO: 새 행 추가 로직 구현
-    console.log('New row');
   };
 
   // 저장
@@ -194,36 +199,34 @@ export default function UsersPage() {
       <div className="h-full flex flex-col gap-3">
         <PageHeader title="사용자 관리" description="사용자 계정 및 권한을 관리합니다.">
           <div className="flex items-center gap-1.5">
-            <SearchButton
-              onSearch={QueryClick}
-              onReset={() => searchInputRef.current?.reset()}
-            />
             <Button
               size="sm"
-              variant="outline"
               onClick={NewClick}
-              className="h-6 w-14 px-3.5 py-0.5 text-[10px] font-medium border-green-500 text-green-600 bg-white shadow hover:bg-green-50 hover:shadow-lg transition-all"
+              className="h-6 px-3 text-[10px] bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 rounded-md shadow-sm transition-colors"
             >
-              <Plus className="h-3 w-3" />
-              행추가
+              신규
             </Button>
             <Button
               size="sm"
-              variant="outline"
+              onClick={QueryClick}
+              className="h-6 px-3 text-[10px] bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 active:bg-gray-100 rounded-md shadow-sm transition-colors"
+            >
+              조회
+            </Button>
+            <Button
+              size="sm"
               onClick={SaveClick}
               disabled={!isEditing}
-              className="h-6 w-14 px-3.5 py-0.5 text-[10px] font-medium border-blue-500 text-blue-600 bg-white shadow hover:bg-blue-50 hover:shadow-lg transition-all"
+              className="h-6 px-3 text-[10px] bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 rounded-md shadow-sm transition-colors"
             >
-              <Save className="h-3 w-3" />
               저장
             </Button>
             <Button
               size="sm"
-              variant="outline"
               onClick={DeleteClick}
-              className="h-6 w-14 px-3.5 py-0.5 text-[10px] font-medium border-red-500 text-red-600 bg-white shadow hover:bg-red-50 hover:shadow-lg transition-all"
+              disabled={selectedCount === 0}
+              className="h-6 px-3 text-[10px] bg-red-500 text-white hover:bg-red-600 active:bg-red-700 disabled:bg-gray-300 disabled:text-gray-500 rounded-md shadow-sm transition-colors"
             >
-              <Trash2 className="h-3 w-3" />
               삭제
             </Button>
           </div>
@@ -250,6 +253,7 @@ export default function UsersPage() {
             onUpdate={handleUpdate}
             onBulkDelete={handleBulkDelete}
             onEditChange={setIsEditing}
+            onSelectionChange={(rows) => setSelectedCount(rows.length)}
             getRowId={(user) => user.userId}
           />
         </div>

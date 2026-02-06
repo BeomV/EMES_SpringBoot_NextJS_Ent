@@ -11,6 +11,7 @@ import {
   FileText,
   LayoutDashboard,
   ChevronDown,
+  Table,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -64,6 +65,11 @@ const menuItems: MenuItem[] = [
       { title: '감사 로그', href: '/audit-logs' },
       { title: '메타데이터', href: '/metadata' },
     ],
+  },
+  {
+    title: '대용량 테이블 데모',
+    href: '/virtual-table-demo',
+    icon: Table,
   },
 ];
 

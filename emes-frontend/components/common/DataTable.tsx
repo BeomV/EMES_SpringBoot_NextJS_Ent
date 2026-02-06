@@ -46,6 +46,7 @@ interface DataTableProps<T extends object> {
   onUpdate?: (row: T) => Promise<void>  // 행 업데이트 콜백
   onBulkDelete?: (rows: T[]) => Promise<void>  // 일괄 삭제 콜백
   onEditChange?: (isEditing: boolean) => void  // 편집 상태 변경 콜백
+  onSelectionChange?: (selectedRows: T[]) => void  // 선택 항목 변경 콜백
   getRowId?: (row: T) => string | number  // 행 ID 추출 함수
   className?: string
 }
@@ -148,6 +149,8 @@ function useColumnResize(
 export interface DataTableHandle {
   saveEdit: () => Promise<void>
   isEditing: () => boolean
+  editingCount: () => number
+  startMultiEdit: (rows: any[]) => void
   getSelectedRows: () => any[]
   clearSelection: () => void
 }
@@ -166,6 +169,7 @@ function DataTableInner<T extends object>({
   onUpdate,
   onBulkDelete,
   onEditChange,
+  onSelectionChange,
   getRowId,
   className,
 }: DataTableProps<T>, ref: React.Ref<DataTableHandle>) {
@@ -193,18 +197,26 @@ function DataTableInner<T extends object>({
   const editHook = useTableEdit<T>(getRowId)
   const {
     isEditing,
-    editingData,
+    editingCount,
+    editingDataMap,
     startEdit,
+    startEditMultiple,
+    addToEdit,
     cancelEdit,
     updateEditingData,
+    getEditingData,
     saveEdit,
   } = editable ? editHook : {
     isEditing: () => false,
-    editingData: null,
+    editingCount: 0,
+    editingDataMap: new Map(),
     startEdit: () => {},
+    startEditMultiple: () => {},
+    addToEdit: () => {},
     cancelEdit: () => {},
     updateEditingData: () => {},
-    saveEdit: () => null,
+    getEditingData: () => null,
+    saveEdit: () => [],
   }
 
   // Selection (conditional)
@@ -398,16 +410,17 @@ function DataTableInner<T extends object>({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [handleCopy, selectedCells.size])
 
-  // Handle row save (editing mode)
+  // Handle row save (editing mode) - supports multiple rows
   const handleSaveEdit = async () => {
-    if (!onUpdate || !editingData) return
+    if (!onUpdate || editingCount === 0) return
 
-    const savedData = saveEdit()
-    if (!savedData) return
+    const savedRows = saveEdit()
+    if (!savedRows || savedRows.length === 0) return
 
     try {
-      await onUpdate(savedData as T)
-      toast.success('저장되었습니다')
+      // Save all edited rows
+      await Promise.all(savedRows.map((row) => onUpdate(row as T)))
+      toast.success(`${savedRows.length}개 행이 저장되었습니다`)
     } catch (error) {
       toast.error('저장에 실패했습니다')
       console.error('Save error:', error)
@@ -418,7 +431,9 @@ function DataTableInner<T extends object>({
   // Expose methods via ref
   React.useImperativeHandle(ref, () => ({
     saveEdit: handleSaveEdit,
-    isEditing: () => editingData !== null,
+    isEditing: () => editingCount > 0,
+    editingCount: () => editingCount,
+    startMultiEdit: (rows: T[]) => startEditMultiple(rows, sortedData),
     getSelectedRows,
     clearSelection,
   }))
@@ -426,16 +441,30 @@ function DataTableInner<T extends object>({
   // Notify parent of edit state changes
   React.useEffect(() => {
     if (onEditChange) {
-      onEditChange(editingData !== null)
+      onEditChange(editingCount > 0)
     }
-  }, [editingData, onEditChange])
+  }, [editingCount, onEditChange])
+
+  // Notify parent of selection changes
+  React.useEffect(() => {
+    if (onSelectionChange && selectable) {
+      onSelectionChange(getSelectedRows())
+    }
+  }, [selectedCount, onSelectionChange, selectable, getSelectedRows])
 
   // Handle row click (start edit or set active row)
+  // Supports cumulative editing: double-clicking another row adds it to editing set
   const handleRowClick = (row: T, rowIndex: number) => {
     setActiveRowIndex(rowIndex) // Always set active row
     if (!editable) return
     if (isEditing(row, rowIndex)) return
-    startEdit(row, rowIndex)
+
+    // If already editing other rows, add this row to editing set (cumulative)
+    if (editingCount > 0) {
+      addToEdit(row, rowIndex)
+    } else {
+      startEdit(row, rowIndex)
+    }
   }
 
   // Handle bulk delete
@@ -460,7 +489,7 @@ function DataTableInner<T extends object>({
     if (!resizableColumns) return undefined
 
     let total = 5 // row selector
-    if (selectable) total += 20 // checkbox column
+    if (selectable) total += 28 // checkbox column
 
     // Add all column widths
     columnWidths.forEach(width => {
@@ -487,7 +516,7 @@ function DataTableInner<T extends object>({
         >
           <colgroup>
             <col style={{ width: '5px' }} />
-            {selectable && <col style={{ width: '20px' }} />}
+            {selectable && <col style={{ width: '28px' }} />}
             {resizableColumns && columns.map((col, i) => (
               <col key={col.key} style={{ width: `${columnWidths[i]}px` }} />
             ))}
@@ -499,7 +528,7 @@ function DataTableInner<T extends object>({
               <TableHead className="w-1 px-0" />
               {selectable && (
                 <TableHead
-                  className="w-[20px] text-center cursor-pointer hover:bg-muted/50 whitespace-nowrap"
+                  className="w-[28px] text-center cursor-pointer hover:bg-muted/50 whitespace-nowrap"
                   onClick={toggleAll}
                 >
                   <span className="text-[10px]">선택</span>
@@ -622,7 +651,7 @@ function DataTableInner<T extends object>({
 
                     {/* Checkbox cell or Cancel button (edit mode) */}
                     {selectable && (
-                      <TableCell className="w-[20px] p-0" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="w-[28px] p-0" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-center">
                           {editable && isCurrentlyEditing ? (
                             <Button
@@ -641,7 +670,7 @@ function DataTableInner<T extends object>({
                               checked={isCurrentRowSelected}
                               onCheckedChange={() => toggleRow(row, rowIndex)}
                               aria-label="행 선택"
-                              className="h-2.5 w-2.5"
+                              className="h-3.5 w-3.5 rounded-sm"
                             />
                           )}
                         </div>
@@ -686,17 +715,18 @@ function DataTableInner<T extends object>({
 
                       // Editable cell - in edit mode (uses EditableCell)
                       if (editable && isCurrentlyEditing) {
+                        const rowEditingData = getEditingData(row, rowIndex)
                         return (
                           <EditableCell
                             key={col.key}
                             isEditing={isCurrentlyEditing}
-                            value={(editingData as Record<string, unknown>)?.[col.key]}
+                            value={(rowEditingData as Record<string, unknown>)?.[col.key]}
                             row={row}
                             rowIndex={rowIndex}
                             cellKey={col.key}
                             align={col.align}
                             render={col.render}
-                            onChange={(key, value) => updateEditingData(key as keyof T, value)}
+                            onChange={(key, value) => updateEditingData(row, rowIndex, key as keyof T, value as T[keyof T])}
                             className={cn(
                               isSelected && "bg-primary/5",
                               isTopEdge && "border-t-2 border-t-primary",
@@ -753,11 +783,18 @@ function DataTableInner<T extends object>({
               </span>
             )}
           </div>
-          {selectedCount > 0 && (
-            <span>
-              <span className="font-semibold text-foreground">{selectedCount}</span>개 항목 선택됨
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {editingCount > 0 && (
+              <span className="text-yellow-600 font-semibold">
+                {editingCount}개 행 편집 중
+              </span>
+            )}
+            {selectedCount > 0 && (
+              <span>
+                <span className="font-semibold text-foreground">{selectedCount}</span>개 항목 선택됨
+              </span>
+            )}
+          </div>
         </div>
       )}
     </div>
