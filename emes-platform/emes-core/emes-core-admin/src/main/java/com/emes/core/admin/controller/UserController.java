@@ -154,4 +154,46 @@ public class UserController {
         userService.toggleAccountLock(userId, false);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    /**
+     * 대용량 더미 데이터 생성 (테스트용)
+     * @param count 생성할 더미 데이터 개수 (기본값: 10000, 최대: 10000000)
+     */
+    @GetMapping("/dummy")
+    @PreAuthorize("hasAuthority('USER_READ')")
+    public ResponseEntity<ApiResponse<java.util.List<UserResponse>>> getDummyUsers(
+            @RequestParam(defaultValue = "10000") Integer count) {
+        log.info("Generate dummy users request: count={}", count);
+
+        // 최대 1000만개로 제한
+        int actualCount = Math.min(count, 10_000_000);
+
+        java.util.List<UserResponse> dummyUsers = new java.util.ArrayList<>(actualCount);
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        String[] departments = {"개발팀", "기획팀", "디자인팀", "영업팀", "인사팀", "재무팀", "생산팀", "품질팀"};
+        String[] positions = {"사원", "대리", "과장", "차장", "부장", "이사"};
+
+        for (int i = 1; i <= actualCount; i++) {
+            dummyUsers.add(UserResponse.builder()
+                    .userId((long) i)
+                    .username("user" + i)
+                    .email("user" + i + "@example.com")
+                    .displayName("테스트사용자" + i)
+                    .phoneNumber("010-" + String.format("%04d", i % 10000) + "-" + String.format("%04d", (i / 10000) % 10000))
+                    .department(departments[i % departments.length])
+                    .position(positions[i % positions.length])
+                    .enabled(i % 10 != 0) // 10% 비활성
+                    .accountLocked(i % 50 == 0) // 2% 잠금
+                    .lastLoginAt(now.minusDays(i % 30))
+                    .passwordChangedAt(now.minusDays(i % 90))
+                    .createdAt(now.minusDays(i % 365))
+                    .createdBy("admin")
+                    .updatedAt(now.minusDays(i % 30))
+                    .updatedBy("admin")
+                    .build());
+        }
+
+        log.info("Generated {} dummy users", actualCount);
+        return ResponseEntity.ok(ApiResponse.success(dummyUsers));
+    }
 }

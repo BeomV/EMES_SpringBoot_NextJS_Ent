@@ -75,12 +75,31 @@ export function useTableEdit<T extends object>(
   }, [getRowId]);
 
   /**
-   * 행 편집 취소
+   * 모든 행 편집 취소
    */
   const cancelEdit = useCallback(() => {
     setEditingRowIds(new Set());
     setEditingDataMap(new Map());
   }, []);
+
+  /**
+   * 특정 행 편집 취소
+   */
+  const cancelEditRow = useCallback((row: T, rowIndex: number) => {
+    const rowId = getRowId ? getRowId(row) : rowIndex;
+
+    setEditingRowIds((prev) => {
+      const next = new Set(prev);
+      next.delete(rowId);
+      return next;
+    });
+
+    setEditingDataMap((prev) => {
+      const next = new Map(prev);
+      next.delete(rowId);
+      return next;
+    });
+  }, [getRowId]);
 
   /**
    * 특정 행의 편집 데이터 업데이트
@@ -135,6 +154,7 @@ export function useTableEdit<T extends object>(
     startEditMultiple,
     addToEdit,
     cancelEdit,
+    cancelEditRow,
     updateEditingData,
     getEditingData,
     saveEdit,
